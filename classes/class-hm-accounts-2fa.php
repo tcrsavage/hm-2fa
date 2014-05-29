@@ -88,6 +88,34 @@ class HM_Accounts_2FA {
 	}
 
 	/**
+	 * Encrypt a secret string for storage
+	 *
+	 * @param $string
+	 * @return mixed|string|void
+	 */
+	static function encrypt_secret( $string ) {
+
+		if ( $string === '' )
+			return $string;
+
+		return trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, $string, MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) ) );
+	}
+
+	/**
+	 * Decrypt a secret string after pulling from storage
+	 *
+	 * @param $string
+	 * @return mixed|string|void
+	 */
+	static function decrypt_secret( $string ) {
+
+		if ( $string === '' )
+			return $string;
+
+		return trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, base64_decode( $string ), MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) );
+	}
+
+	/**
 	 * Generates a qr code string from a secret string
 	 *
 	 * @param $secret

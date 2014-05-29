@@ -34,7 +34,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_secret( $code ) {
 
-		$this->update_meta( 'hm_accounts_2fa_secret', $code );
+		$this->update_meta( 'hm_accounts_2fa_secret', HM_Accounts_2FA::encrypt_secret( $code ) );
 	}
 
 	/**
@@ -44,8 +44,9 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_secret() {
 
-		return $this->get_meta( 'hm_accounts_2fa_secret' );
+		return HM_Accounts_2FA::decrypt_secret( $this->get_meta( 'hm_accounts_2fa_secret' ) );
 	}
+
 
 	/**
 	 * Sets whether or not 2fa is enabled
