@@ -162,7 +162,6 @@ function hma_2fa_authenticate_code( $user_authenticated, $username = '', $passwo
 	<?php $contents = ob_get_clean();
 
 	wp_die( $contents );
-
 }
 
 add_action( 'authenticate', 'hma_2fa_authenticate_code', 900, 3 );
