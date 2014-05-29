@@ -13,28 +13,24 @@ class HM_Accounts_2FA {
 	static function verify_code( $code, $secret, $last_login ) {
 
 		// Did the user enter 6 digits ?
-		if ( strlen( $code ) != 6) {
+		if ( strlen( $code ) != 6 ) {
 			return false;
 		} else {
 			$code = intval( $code );
 		}
 
-		$firstcount = -1;
-		$lastcount  =  1;
-		$verified   =  false;
-
-		$tm = floor( time() / 30 );
-
-		$secretkey = Base32::decode( $secret );
+		$verified   = false;
+		$tm         = floor( time() / 30 );
+		$secret_key = Base32::decode( $secret );
 
 		// Keys from 30 seconds before and after are valid aswell.
-		for ( $i = $firstcount; $i <= $lastcount; $i++) {
+		for ( $i = -1; $i <= 1; $i++) {
 
 			// Pack time into binary string
 			$time = chr( 0 ) . chr( 0 ) . chr( 0 ) . chr( 0 ) . pack( 'N*', $tm + $i );
 
 			// Hash it with users secret key
-			$hm = hash_hmac( 'SHA1', $time, $secretkey, true );
+			$hm = hash_hmac( 'SHA1', $time, $secret_key, true );
 
 			// Use last nipple of result as index/offset
 			$offset = ord(substr( $hm, -1 ) ) & 0x0F;
@@ -44,12 +40,10 @@ class HM_Accounts_2FA {
 
 			// Unpak binary value
 			$value = unpack( "N", $hashpart );
-
 			$value = $value[1];
 
 			// Only 32 bits
 			$value = $value & 0x7FFFFFFF;
-
 			$value = $value % 1000000;
 
 			if ( $value === $code ) {
@@ -64,7 +58,7 @@ class HM_Accounts_2FA {
 				}
 
 				// Return timeslot in which login happened.
-				$verified =  $tm + $i;
+				$verified = $tm + $i;
 
 				break;
 			}
@@ -105,7 +99,6 @@ class HM_Accounts_2FA {
 		}
 
 		return apply_filters( 'hma_2fa_generate_single_use_secrets', $secrets );
-
 	}
 
 	/**
@@ -129,7 +122,10 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		$encrypted = trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(), $string, MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) ) );
+		$encrypted = trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(),
+			$string, MCRYPT_MODE_ECB,
+			mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) )
+		) );
 
 		return apply_filters( 'hma_2fa_encrypt_secret', $encrypted, $string );
 	}
@@ -145,7 +141,10 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		$decrypted = trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(), base64_decode( $string ), MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) );
+		$decrypted = trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(),
+			base64_decode( $string ), MCRYPT_MODE_ECB,
+			mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND )
+		) );
 
 		return apply_filters( 'hma_2fa_decrypt_secret', $decrypted, $string );
 	}
@@ -157,7 +156,7 @@ class HM_Accounts_2FA {
 	 */
 	static function get_encryption_secret() {
 
-		if ( defined( 'HMA_2FA_ENCRYPTION_SECRET' ) ) {
+		if ( defined( 'HMA_2FA_ENCRYPTION_SECRET' ) && HMA_2FA_ENCRYPTION_SECRET ) {
 
 			$secret = HMA_2FA_ENCRYPTION_SECRET;
 
@@ -177,9 +176,9 @@ class HM_Accounts_2FA {
 	 */
 	static function generate_qr_code_string( $secret ) {
 
-		$qr_code =  "otpauth://totp/"
-			. rawurlencode( wp_get_current_user()->user_login ) . "?secret="
-			. $secret . "&issuer=" . rawurlencode( get_bloginfo( 'name' ) );
+		$qr_code = "otpauth://totp/"
+			     . rawurlencode( wp_get_current_user()->user_login ) . "?secret="
+			     . $secret . "&issuer=" . rawurlencode( get_bloginfo( 'name' ) );
 
 		return apply_filters( 'hma_2fa_generate_qr_code_string', $qr_code, $secret );
 	}

@@ -151,8 +151,9 @@ class HM_Accounts_2FA_User {
 
 		$verified = false;
 
-		if ( $token && $this->get_login_access_token() === $token )
+		if ( $token && $this->get_login_access_token() === $token ) {
 			$verified = true;
+		}
 
 		return apply_filters( 'hma_2fa_user_verify_login_access_token', $verified );
 	}

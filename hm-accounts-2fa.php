@@ -34,8 +34,9 @@ function hma_2fa_admin_fields( $user ) {
 
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
 
-	if ( is_wp_error( $user_2fa ) )
-		return; ?>
+	if ( is_wp_error( $user_2fa ) ){
+		return;
+	} ?>
 
 	<div id="hma-2fa">
 
@@ -89,11 +90,13 @@ add_action( 'edit_user_profile', 'hma_2fa_admin_fields' );
  */
 function hma_2fa_update_user_profile( $user_id ) {
 
-	if ( ! $user_id )
+	if ( ! $user_id ) {
 		$user_id = get_current_user_id();
+	}
 
-	if ( ! isset( $_POST['hma_2fa_is_enabled'] ) || ! isset( $_POST['hma_2fa_secret'] ) )
+	if ( ! isset( $_POST['hma_2fa_is_enabled'] ) || ! isset( $_POST['hma_2fa_secret'] ) ) {
 		return;
+	}
 
 	$user_2fa   = HM_Accounts_2FA_User::get_instance( $user_id );
 
@@ -195,13 +198,12 @@ add_action( 'authenticate', 'hma_2fa_authenticate_code', 900, 3 );
 function hma_2fa_authenticate_login() {
 
 	$user_id     = ! empty( $_POST['hma_2fa_login_user_id'] ) ? sanitize_text_field( $_POST['hma_2fa_login_user_id'] ) : '';
-	$redirect_to = ! empty( $_POST['redirect_to'] ) ? sanitize_text_field( $_POST['redirect_to'] ) : admin_url();
-	$referer     = ! empty( $_POST['referer'] ) ? sanitize_text_field( $_POST['referer'] ) : admin_url();
-	$login_token = ! empty( $_POST['hma_2fa_login_token'] ) ? sanitize_text_field( $_POST['hma_2fa_login_token'] ) : '';
-	$auth_code   = ! empty( $_POST['hma_2fa_auth_code'] ) ? sanitize_text_field( $_POST['hma_2fa_auth_code'] ) : '';
+	$redirect_to = ! empty( $_POST['redirect_to'] )           ? sanitize_text_field( $_POST['redirect_to'] )           : admin_url();
+	$referer     = ! empty( $_POST['referer'] )               ? sanitize_text_field( $_POST['referer'] )               : admin_url();
+	$login_token = ! empty( $_POST['hma_2fa_login_token'] )   ? sanitize_text_field( $_POST['hma_2fa_login_token'] )   : '';
+	$auth_code   = ! empty( $_POST['hma_2fa_auth_code'] )     ? sanitize_text_field( $_POST['hma_2fa_auth_code'] )     : '';
 
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user_id );
-
 
 	if ( is_wp_error( $user_2fa ) ) {
 
