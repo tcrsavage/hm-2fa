@@ -182,4 +182,40 @@ class HM_Accounts_2FA {
 
 		return apply_filters( 'hma_2fa_generate_qr_code_string', $qr_code, $secret );
 	}
+
+	/**
+	 * Adds a login error to the list - generally there should only be one error in the list at a time
+	 *
+	 * @param $code
+	 * @param $text
+	 */
+	static function add_login_error( $code, $text ) {
+
+		$errors = self::get_login_errors();
+
+		$errors[$code] = $text;
+
+		setcookie( 'hma_2fa_login_errors', json_encode( $errors ), strtotime( '+1 week' ), '/' );
+
+	}
+
+	/**
+	 * Gets the login errors
+	 *
+	 * @return array
+	 */
+	static function get_login_errors() {
+
+		$cookie = ! empty( $_COOKIE['hma_2fa_login_errors'] ) ? json_decode( stripslashes( $_COOKIE['hma_2fa_login_errors'] ) ) : array();
+
+		return is_object( $cookie ) ? (array) $cookie : array();
+	}
+
+	/**
+	 * Clears the login errors
+	 */
+	static function delete_login_errors() {
+
+		setcookie( 'hma_2fa_login_errors', '', strtotime( '-1 week' ), '/' );
+	}
 }

@@ -34,7 +34,7 @@ function hma_2fa_admin_fields( $user ) {
 
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
 
-	if ( is_wp_error( $user_2fa ) ){
+	if ( is_wp_error( $user_2fa ) ) {
 		return;
 	} ?>
 
@@ -207,7 +207,11 @@ function hma_2fa_authenticate_login() {
 
 	if ( is_wp_error( $user_2fa ) ) {
 
-		wp_die( 'Invalid user' );
+		HM_Accounts_2FA::add_login_error( 'hma_2fa_invalid_request', 'Invalid auth request' );
+
+		wp_redirect( $referer );
+
+		exit;
 	}
 
 	$authenticated = false;
@@ -244,12 +248,45 @@ function hma_2fa_authenticate_login() {
 
 	} else {
 
+		HM_Accounts_2FA::add_login_error( 'hma_2fa_invalid_request', 'Invalid 2 factor auth key' );
+
 		wp_redirect( $referer );
 
 		exit;
 	}
-
 }
 
 add_action( 'admin_post_nopriv_hma_2fa_authenticate_login', 'hma_2fa_authenticate_login' );
 add_action( 'admin_post_hma_2fa_authenticate_login', 'hma_2fa_authenticate_login' );
+
+
+/**
+ * Hook in to the WordPress login page error messages and display 2fa error messages is applicable
+ */
+function hma_2fa_display_login_page_errors( WP_Error $errors, $redirect_to ) {
+
+	foreach ( HM_Accounts_2FA::get_login_errors() as $code => $message ) {
+
+		$errors->add( $code, $message );
+	}
+
+	//We've shown the errors, delete them from cache
+	HM_Accounts_2FA::delete_login_errors();
+
+	return $errors;
+}
+
+add_filter( 'wp_login_errors', 'hma_2fa_display_login_page_errors', 10, 2 );
+
+
+/**
+ * Clean up the error messages, they only need to be displayed on the first page load after failure
+ */
+function hma_2fa_clear_login_errors() {
+
+	HM_Accounts_2FA::delete_login_errors();
+}
+
+add_action( 'login_footer', 'hma_2fa_clear_login_errors' );
+add_action( 'admin_footer', 'hma_2fa_clear_login_errors' );
+add_action( 'wp_footer', 'hma_2fa_clear_login_errors' );
