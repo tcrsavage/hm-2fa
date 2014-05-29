@@ -149,7 +149,7 @@ add_action( 'wp_ajax_hma_2fa_generate_secret_key', 'hma_2fa_ajax_generate_secret
  * @param string $password
  * @return WP_Error
  */
-function hma_2fa_authenticate_code( $user_authenticated, $username = '', $password = '' ) {
+function hma_2fa_authenticate_interstitial( $user_authenticated, $username = '', $password = '' ) {
 
 	$user     = get_user_by( 'login', $username );
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
@@ -164,33 +164,49 @@ function hma_2fa_authenticate_code( $user_authenticated, $username = '', $passwo
 
 	$user_2fa->set_login_access_token( $access_token );
 
-	ob_start(); ?>
+	//Template file has been created for the interstitial screen, use that
+	if ( $html_from_file = file_exists( $file_path = apply_filters( 'hma_2fa_authenticate_interstitial_template', get_template_directory() . '/login.hma_2fa.php' ) ) ) :
 
-	<div>
-		<p>
-			<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
-		</p>
+		include( $file_path );
 
-		<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
-			<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
-			<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $access_token ); ?>" />
-			<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
+		exit;
 
-			<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
-			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
-			<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
-			<input type="submit" class="button" value="Submit" />
-		</form>
+	//Custom html has been defined, use that
+	elseif ( $contents = apply_filters( 'hma_2fa_authenticate_interstitial_html', $user_2fa, $access_token, $redirect_to ) ) :
 
-	</div>
+		echo $contents;
 
-	<?php $contents = ob_get_clean();
+		exit;
 
-	wp_die( $contents );
+	//Default html
+	else: ?>
+
+		<div>
+			<p>
+				<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
+			</p>
+
+			<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
+				<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
+				<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $access_token ); ?>" />
+				<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
+
+				<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
+				<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
+				<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
+				<input type="submit" class="button" value="Submit" />
+			</form>
+
+		</div>
+
+		<?php $contents = ob_get_clean();
+
+		wp_die( $contents );
+
+	endif;
 }
 
-add_action( 'authenticate', 'hma_2fa_authenticate_code', 900, 3 );
-
+add_action( 'authenticate', 'hma_2fa_authenticate_interstitial', 900, 3 );
 
 /**
  * Authenticate the user's 2fa login attempt
@@ -246,7 +262,7 @@ function hma_2fa_authenticate_login() {
 
 		$user_2fa->authenticate();
 
-		wp_redirect( $redirect_to );
+		wp_redirect( $args['redirect_to'] );
 
 		exit;
 
@@ -254,7 +270,7 @@ function hma_2fa_authenticate_login() {
 
 		HM_Accounts_2FA::add_login_error( 'hma_2fa_invalid_request', 'Invalid 2 factor auth key' );
 
-		wp_redirect( $referer );
+		wp_redirect( $args['referer'] );
 
 		exit;
 	}
