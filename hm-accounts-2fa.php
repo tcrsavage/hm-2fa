@@ -116,55 +116,6 @@ add_action( 'personal_options_update', 'hma_2fa_update_user_profile' );
 add_action( 'edit_user_profile_update', 'hma_2fa_update_user_profile' );
 add_action( 'hma_update_user_profile_completed', 'hma_2fa_update_user_profile' );
 
-/**
- * Hook into 'authenticate' filter and apply 2fa screening if the user has 2fa enabled
- *
- * @param $user_authenticated
- * @param string $username
- * @param string $password
- * @return WP_Error
- */
-function hma_2fa_authenticate_code( $user_authenticated, $username = '', $password = '' ) {
-
-	$user     = get_user_by( 'login', $username );
-	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
-
-	// Bad user/credentials or 2FA isn't enabled - let other hooks handle this case
-	if ( ! $user || is_wp_error( $user_authenticated ) || is_wp_error( $user_2fa ) || ! $user_2fa->get_2fa_enabled() ) {
-		return $user_authenticated;
-	}
-
-	$access_token = HM_Accounts_2FA::generate_secret( 32 );
-	$redirect_to  = isset( $_POST['redirect_to'] ) ? sanitize_text_field( $_POST['redirect_to'] ) : admin_url();
-
-	$user_2fa->set_login_access_token( $access_token );
-
-	ob_start(); ?>
-
-		<div>
-			<p>
-				<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
-			</p>
-
-			<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
-				<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
-				<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $access_token ); ?>" />
-				<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
-
-				<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
-				<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
-				<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
-				<input type="submit" class="button" value="Submit" />
-			</form>
-
-		</div>
-
-	<?php $contents = ob_get_clean();
-
-	wp_die( $contents );
-}
-
-add_action( 'authenticate', 'hma_2fa_authenticate_code', 900, 3 );
 
 /**
  * Generate a new random 2fa key and qr code string
@@ -185,6 +136,57 @@ function hma_2fa_ajax_generate_secret_key() {
 }
 
 add_action( 'wp_ajax_hma_2fa_generate_secret_key', 'hma_2fa_ajax_generate_secret_key' );
+
+
+/**
+ * Hook into 'authenticate' filter and display 2fa interstitial auth screen
+ *
+ * @param $user_authenticated
+ * @param string $username
+ * @param string $password
+ * @return WP_Error
+ */
+function hma_2fa_authenticate_code( $user_authenticated, $username = '', $password = '' ) {
+
+	$user     = get_user_by( 'login', $username );
+	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
+
+	// Bad user/credentials or 2FA isn't enabled - let other hooks handle this case
+	if ( ! $user || is_wp_error( $user_authenticated ) || is_wp_error( $user_2fa ) || ! $user_2fa->get_2fa_enabled() ) {
+		return $user_authenticated;
+	}
+
+	$access_token = HM_Accounts_2FA::generate_user_login_secret( (int) $user->ID );
+	$redirect_to  = isset( $_POST['redirect_to'] ) ? sanitize_text_field( $_POST['redirect_to'] ) : admin_url();
+
+	$user_2fa->set_login_access_token( $access_token );
+
+	ob_start(); ?>
+
+	<div>
+		<p>
+			<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
+		</p>
+
+		<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
+			<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
+			<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $access_token ); ?>" />
+			<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
+
+			<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
+			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
+			<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
+			<input type="submit" class="button" value="Submit" />
+		</form>
+
+	</div>
+
+	<?php $contents = ob_get_clean();
+
+	wp_die( $contents );
+}
+
+add_action( 'authenticate', 'hma_2fa_authenticate_code', 900, 3 );
 
 
 /**

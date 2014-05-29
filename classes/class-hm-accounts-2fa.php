@@ -109,6 +109,16 @@ class HM_Accounts_2FA {
 	}
 
 	/**
+	 * Generate a login token
+	 *
+	 * @return string
+	 */
+	static function generate_user_login_secret( $user_id = null ) {
+
+		return apply_filters( 'hma_2fa_generate_user_login_secret',  self::generate_secret( 64 ), $user_id );
+	}
+
+	/**
 	 * Encrypt a secret string for storage
 	 *
 	 * @param $string
