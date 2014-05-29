@@ -92,6 +92,26 @@ class HM_Accounts_2FA_User {
 	}
 
 	/**
+	 * Sets whether or not the user is allowed to edit their 2fa settings
+	 *
+	 * @param $bool
+	 */
+	function set_2fa_hidden( $bool ) {
+
+		$this->update_meta( 'hma_2fa_is_hidden', ( $bool ) ? '1' : '0'  );
+	}
+
+	/**
+	 * Gets whether or not the user is allowed to edit their 2fa settings
+	 *
+	 * @return bool
+	 */
+	function get_2fa_hidden() {
+
+		return apply_filters( 'hma_2fa_user_get_2fa_hidden', ( $this->get_meta( 'hma_2fa_is_hidden' ) ), $this->user_id );
+	}
+
+	/**
 	 * Sets the last login time slot for the user
 	 *
 	 * @param $last_login
@@ -156,6 +176,42 @@ class HM_Accounts_2FA_User {
 		}
 
 		return apply_filters( 'hma_2fa_user_verify_login_access_token', $verified );
+	}
+
+
+	/**
+	 * Check if a given user has the ability to edit/hide/full on this user
+	 *
+	 * If current_user is set to false, we assume to be checking the user's caps against themselves
+	 *
+	 * @param $current_user, $cap
+	 *
+	 * @return mixed
+	 */
+	function has_capability( $current_user = false, $cap ) {
+
+		if ( $current_user === false )
+			$current_user = $this->user_id;
+
+		switch ( $cap ) {
+
+			case 'edit' :
+				$has_cap = ( ! $this->get_2fa_hidden() || user_can( $current_user, 'administrator' ) );
+				break;
+
+			case 'hide' :
+				$has_cap = user_can( $current_user, 'administrator' );
+				break;
+
+			case 'full' :
+				$has_cap = user_can( $current_user, 'administrator' );
+				break;
+
+			default :
+				$has_cap = false;
+		}
+
+		return apply_filters( 'hma_2fa_user_has_capability', $has_cap, $cap, $this->user_id, $current_user );
 	}
 
 	/**

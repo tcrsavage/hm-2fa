@@ -30,58 +30,19 @@ add_action( 'admin_enqueue_scripts', 'hma_2fa_admin_scripts' );
  * @param mixed $user
  * @return void
  */
-function hma_2fa_admin_fields( $user ) {
+function hma_2fa_edit_profile_fields( $user ) {
 
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
 
-	if ( is_wp_error( $user_2fa ) ) {
+	if ( is_wp_error( $user_2fa ) || ! $user_2fa->has_capability( get_current_user_id(), 'edit' ) ) {
 		return;
-	} ?>
+	}
 
-	<div id="hma-2fa">
-
-		<h3>2 Factor Authentication</h3>
-
-		<table class="form-table">
-
-			<tr>
-				<th><label for="hma-2fa-is-enabled">Enable 2 factor authentication</label></th>
-				<td>
-					<input name="hma_2fa_is_enabled" type="hidden" value="0" />
-					<input id="hma-2fa-is-enabled" name="hma_2fa_is_enabled" type="checkbox" <?php checked( $user_2fa->get_2fa_enabled() ); ?> value="1" />
-				</td>
-			</tr>
-
-			<tr id="hma-2fa-secret-settings" style="display: none;">
-				<th><label for="hma-2fa-secret">Secret code</label></th>
-				<td id="hma-2fa-secret-settings-fields">
-					<input type="text" name="hma_2fa_secret" id="hma-2fa-secret" placeholder="<?php echo ( $user_2fa->get_secret() ) ? 'It\'s a secret!' : ''; ?>"><br />
-
-					<div id="hma-2fa-qr-code" style="margin: 10px 1px 1px 1px;"></div>
-
-					<div id="hma-2fa-single-use-secrets" style="margin: 10px 1px 1px 1px; display: none;">
-						<span class="description">These are your single use secret keys, save them, print them off and store somewhere safe. These will be your only way of accessing your account if you lose your phone</span>
-					</div>
-
-					<span class="description"></span> <br />
-
-					<input type="button" id="hma-2fa-genarate-secret" value="Generate<?php echo ( $user_2fa->get_secret() ) ? ' new' : ''; ?>"  />
-				</td>
-
-				<td id="hma-2fa-secret-settings-ajax-loading" style="display: none;">
-					<div class="spinner" style="display: block; float: left; margin: 0;"></div>
-				</td>
-			</tr>
-
-		</table>
-
-	</div>
-
-	<?php
+	include( 'templates/profile-fields.php' );
 }
 
-add_action( 'show_user_profile', 'hma_2fa_admin_fields' );
-add_action( 'edit_user_profile', 'hma_2fa_admin_fields' );
+add_action( 'show_user_profile', 'hma_2fa_edit_profile_fields' );
+add_action( 'edit_user_profile', 'hma_2fa_edit_profile_fields' );
 
 /**
  * Update the user's 2fa settings - assumes nonce screening has already taken place
@@ -94,17 +55,30 @@ function hma_2fa_update_user_profile( $user_id ) {
 		$user_id = get_current_user_id();
 	}
 
+	// Not enough data, don't process the request
 	if ( ! isset( $_POST['hma_2fa_is_enabled'] ) || ! isset( $_POST['hma_2fa_secret'] ) ) {
 		return;
 	}
 
-	$user_2fa   = HM_Accounts_2FA_User::get_instance( $user_id );
+	$user_2fa = HM_Accounts_2FA_User::get_instance( $user_id );
+
+	//The current user does not have the capability to edit this user's settings
+	if ( ! $user_2fa->has_capability( get_current_user_id(), 'edit' ) ) {
+		return;
+	}
 
 	$secret     = sanitize_text_field( $_POST['hma_2fa_secret'] );
 	$single_use = array_map( 'sanitize_text_field', ! empty( $_POST['hm_accounts_2fa_single_use_secrets'] ) ? $_POST['hm_accounts_2fa_single_use_secrets'] : array() );
 	$enabled    = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret );
+	$hidden     = ( ! empty( $_POST['hma_2fa_is_hidden'] ) );
 
-	$user_2fa->set_2fa_enabled( $enabled );
+	if ( isset( $_POST['hma_2fa_is_hidden'] ) && $user_2fa->has_capability( get_current_user_id(), 'hide' ) ) {
+		$user_2fa->set_2fa_hidden( $hidden );
+	}
+
+	if ( isset( $_POST['hma_2fa_is_enabled'] ) ) {
+		$user_2fa->set_2fa_enabled( $enabled );
+	}
 
 	if ( $secret ) {
 		$user_2fa->set_secret( $secret );
@@ -216,26 +190,11 @@ function hma_2fa_get_custom_interstitial_html( $user_2fa, $access_token, $redire
  */
 function hma_2fa_get_default_interstitial_html( $user_2fa, $access_token, $redirect_to ) {
 
-	ob_start() ?>
+	ob_start();
 
-	<div>
-		<p>
-			<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
-		</p>
+	include( 'templates/login-interstitial.php' );
 
-		<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
-			<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
-			<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $access_token ); ?>" />
-			<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
-
-			<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
-			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
-			<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
-			<input type="submit" class="button" value="Submit" />
-		</form>
-	</div>
-
-	<?php $html = ob_get_clean();
+	$html = ob_get_clean();
 
 	return $html;
 }
@@ -313,7 +272,7 @@ add_action( 'admin_post_hma_2fa_authenticate_login', 'hma_2fa_authenticate_login
 
 
 /**
- * Hook in to the WordPress login page error messages and display 2fa error messages is applicable
+ * Hook in to the WordPress login page error messages and display 2fa error messages if applicable
  */
 function hma_2fa_display_login_page_errors( WP_Error $errors, $redirect_to ) {
 

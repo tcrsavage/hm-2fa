@@ -24,7 +24,7 @@ class HM_Accounts_2FA {
 		$secret_key = Base32::decode( $secret );
 
 		// Keys from 30 seconds before and after are valid aswell.
-		for ( $i = -1; $i <= 1; $i++) {
+		for ( $i = -1; $i <= 1; $i++ ) {
 
 			// Pack time into binary string
 			$time = chr( 0 ) . chr( 0 ) . chr( 0 ) . chr( 0 ) . pack( 'N*', $tm + $i );
