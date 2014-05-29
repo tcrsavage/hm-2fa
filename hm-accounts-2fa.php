@@ -96,10 +96,10 @@ function hma_2fa_update_user_profile( $user_id ) {
 		return;
 
 	$user_2fa   = HM_Accounts_2FA_User::get_instance( $user_id );
+
 	$secret     = sanitize_text_field( $_POST['hma_2fa_secret'] );
 	$single_use = array_map( 'sanitize_text_field', ! empty( $_POST['hm_accounts_2fa_single_use_secrets'] ) ? $_POST['hm_accounts_2fa_single_use_secrets'] : array() );
-
-	$enabled  = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret );
+	$enabled    = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret );
 
 	$user_2fa->set_2fa_enabled( $enabled );
 
@@ -143,10 +143,11 @@ add_action( 'login_form', 'hma_2fa_login_form_extension' );
  */
 function hma_2fa_authenticate_code( $user_authenticated, $username = '', $password = '' ) {
 
-	$user     = get_user_by( 'login', $username ) ? get_user_by( 'login', $username ) : get_user_by( 'email', $username );
+	$user     = get_user_by( 'login', $username );
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
 	$code     = ! empty( $_POST['hm_accounts_2fa_code'] ) ? sanitize_text_field( $_POST['hm_accounts_2fa_code'] ) : '';
 
+	$code     = apply_filters( 'hma_2fa_submitted_auth_code', $code );
 
 	// Bad user or 2FA isn't enabled - let other hooks handle this case
 	if ( ! $user || is_wp_error( $user_2fa ) || ! $user_2fa->get_2fa_enabled() ) {
