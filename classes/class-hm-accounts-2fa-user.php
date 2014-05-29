@@ -19,7 +19,7 @@ class HM_Accounts_2FA_User {
 
 		if ( ! get_user_by( 'id', $user_id ) ) {
 
-			return new WP_Error( 'hma_2fa_user_bad_user_param', 'The user param povided to HM_Accounts_2FA_User was incorrect' );
+			return new WP_Error( 'hma_2fa_user_bad_user_param', 'The user param provided to HM_Accounts_2FA_User was incorrect' );
 
 		} else {
 
