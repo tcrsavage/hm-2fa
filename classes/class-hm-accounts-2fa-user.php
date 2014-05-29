@@ -88,7 +88,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_2fa_enabled() {
 
-		return ( $this->get_meta( 'hm_accounts_2fa_is_enabled' ) );
+		return apply_filters( 'hma_2fa_user_get_2fa_enabled', ( $this->get_meta( 'hm_accounts_2fa_is_enabled' ) ), $this->user_id );
 	}
 
 	/**
@@ -108,7 +108,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_last_login() {
 
-		return $this->get_meta( 'hm_accounts_2fa_last_login' );
+		return apply_filters( 'hma_2fa_user_get_last_login', $this->get_meta( 'hm_accounts_2fa_last_login' ), $this->user_id );
 	}
 
 	/**
@@ -123,31 +123,34 @@ class HM_Accounts_2FA_User {
 
 		$secret = $this->get_secret();
 
+		$verified = false;
+
 		// When was the last successful login performed ?
 		$last_time_slot = $this->get_last_login();
 
 		// Valid code ?
 		if ( $time_slot = HM_Accounts_2FA::verify_code( $code, $secret, $last_time_slot ) ) {
 
-			return $time_slot;
+			$verified = $time_slot;
 
-		} else {
-
-			return false;
 		}
+
+		return apply_filters( 'hma_2fa_user_verify_code', $verified, $this->user_id );
 	}
 
 	function verify_single_use_code( $code ) {
+
+		$verified = false;
 
 		foreach ( $this->get_single_use_secrets() as $secret ) {
 
 			if ( $secret == $code ) {
 
-				return true;
+				$verified = true;
 			}
 		}
 
-		return false;
+		return apply_filters( 'hma_2fa_user_verify_single_use_code', $verified, $this->user_id );
 	}
 
 	function delete_single_use_code( $code ) {

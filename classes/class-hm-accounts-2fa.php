@@ -21,13 +21,14 @@ class HM_Accounts_2FA {
 
 		$firstcount = -1;
 		$lastcount  =  1;
+		$verified   =  false;
 
 		$tm = floor( time() / 30 );
 
 		$secretkey = Base32::decode( $secret );
 
 		// Keys from 30 seconds before and after are valid aswell.
-		for ( $i=$firstcount; $i<=$lastcount; $i++) {
+		for ( $i = $firstcount; $i <= $lastcount; $i++) {
 
 			// Pack time into binary string
 			$time = chr( 0 ) . chr( 0 ) . chr( 0 ) . chr( 0 ) . pack( 'N*', $tm + $i );
@@ -63,11 +64,13 @@ class HM_Accounts_2FA {
 				}
 
 				// Return timeslot in which login happened.
-				return $tm + $i;
+				$verified =  $tm + $i;
+
+				break;
 			}
 		}
 
-		return false;
+		return apply_filters( 'hma_2fa_verify_code', $code, $secret, $last_login, $verified );
 	}
 
 	/**
@@ -84,7 +87,7 @@ class HM_Accounts_2FA {
 			$secret .= substr( $chars, wp_rand( 0, strlen( $chars ) - 1 ), 1 );
 		}
 
-		return $secret;
+		return apply_filters( 'hma_2fa_generate_secret', $secret, $char_count );
 	}
 
 	/**
@@ -94,14 +97,15 @@ class HM_Accounts_2FA {
 	 */
 	static function generate_single_use_secrets() {
 
-		$codes = array();
+		$secrets = array();
 
 		for ( $i = 0; $i < 5; $i++ ) {
 
-			$codes[] = self::generate_secret( 32 );
+			$secrets[] = self::generate_secret( 32 );
 		}
 
-		return $codes;
+		return apply_filters( 'hma_2fa_generate_single_use_secrets', $secrets );
+
 	}
 
 	/**
@@ -115,7 +119,9 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		return trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, $string, MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) ) );
+		$encrypted = trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, $string, MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) ) );
+
+		return apply_filters( 'hma_2fa_encrypt_secret', $string, $encrypted );
 	}
 
 	/**
@@ -129,7 +135,9 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		return trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, base64_decode( $string ), MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) );
+		$decrypted = trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, base64_decode( $string ), MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) );
+
+		return apply_filters( 'hma_2fa_encrypt_secret', $string, $decrypted );
 	}
 
 	/**
@@ -140,9 +148,10 @@ class HM_Accounts_2FA {
 	 */
 	static function generate_qr_code_string( $secret ) {
 
-		return "otpauth://totp/"
+		$qr_code =  "otpauth://totp/"
 			. rawurlencode( wp_get_current_user()->user_login ) . "?secret="
 			. $secret . "&issuer=" . rawurlencode( get_bloginfo( 'name' ) );
 
+		return apply_filters( 'hma_2fa_generate_qr_code_string', $secret, $qr_code );
 	}
 }
