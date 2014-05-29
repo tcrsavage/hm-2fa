@@ -19,7 +19,7 @@ class HM_Accounts_2FA_User {
 
 		if ( ! get_user_by( 'id', $user_id ) ) {
 
-			return new WP_Error( 'hm_accounts_2fa_user_bad_user_param', 'The user param povided to HM_Accounts_2FA_User was incorrect' );
+			return new WP_Error( 'hma_2fa_user_bad_user_param', 'The user param povided to HM_Accounts_2FA_User was incorrect' );
 
 		} else {
 
@@ -34,7 +34,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_secret( $code ) {
 
-		$this->update_meta( 'hm_accounts_2fa_secret', HM_Accounts_2FA::encrypt_secret( $code ) );
+		$this->update_meta( 'hma_2fa_secret', HM_Accounts_2FA::encrypt_secret( $code ) );
 	}
 
 	/**
@@ -44,7 +44,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_secret() {
 
-		return HM_Accounts_2FA::decrypt_secret( $this->get_meta( 'hm_accounts_2fa_secret' ) );
+		return apply_filters( 'hma_2fa_user_get_secret', HM_Accounts_2FA::decrypt_secret( $this->get_meta( 'hma_2fa_secret' ) ), $this->user_id );
 	}
 
 	/**
@@ -56,7 +56,7 @@ class HM_Accounts_2FA_User {
 
 		$secrets = array_map( array( 'HM_Accounts_2FA', 'encrypt_secret' ), $secrets );
 
-		$this->update_meta( 'hm_accounts_2fa_single_use_secrets', $secrets );
+		$this->update_meta( 'hma_2fa_single_use_secrets', $secrets );
 	}
 
 	/**
@@ -66,7 +66,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_single_use_secrets() {
 
-		$secrets = $this->get_meta( 'hm_accounts_2fa_single_use_secrets' );
+		$secrets = $this->get_meta( 'hma_2fa_single_use_secrets' );
 
 		return array_map( array( 'HM_Accounts_2FA', 'decrypt_secret' ), $secrets );
 	}
@@ -78,7 +78,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_2fa_enabled( $bool ) {
 
-		$this->update_meta( 'hm_accounts_2fa_is_enabled', ( $bool ) ? '1' : '0'  );
+		$this->update_meta( 'hma_2fa_is_enabled', ( $bool ) ? '1' : '0'  );
 	}
 
 	/**
@@ -88,7 +88,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_2fa_enabled() {
 
-		return apply_filters( 'hma_2fa_user_get_2fa_enabled', ( $this->get_meta( 'hm_accounts_2fa_is_enabled' ) ), $this->user_id );
+		return apply_filters( 'hma_2fa_user_get_2fa_enabled', ( $this->get_meta( 'hma_2fa_is_enabled' ) ), $this->user_id );
 	}
 
 	/**
@@ -98,7 +98,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_last_login( $last_login ) {
 
-		$this->update_meta( 'hm_accounts_2fa_last_login', $last_login  );
+		$this->update_meta( 'hma_2fa_last_login', $last_login  );
 	}
 
 	/**
@@ -108,7 +108,53 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_last_login() {
 
-		return apply_filters( 'hma_2fa_user_get_last_login', $this->get_meta( 'hm_accounts_2fa_last_login' ), $this->user_id );
+		return apply_filters( 'hma_2fa_user_get_last_login', $this->get_meta( 'hma_2fa_last_login' ), $this->user_id );
+	}
+
+
+	/**
+	 * Sets the login access token for the user
+	 *
+	 * @param $last_login
+	 */
+	function set_login_access_token( $token ) {
+
+		$this->update_meta( 'hma_2fa_login_access_token', HM_Accounts_2FA::encrypt_secret( $token ) );
+	}
+
+	/**
+	 * Gets the login access token for the user
+	 *
+	 * @return mixed
+	 */
+	function get_login_access_token() {
+
+		return apply_filters( 'hma_2fa_user_get_login_access_token', HM_Accounts_2FA::decrypt_secret( $this->get_meta( 'hma_2fa_login_access_token' ) ), $this->user_id );
+	}
+
+	/**
+	 * Delete the user's login access token
+	 *
+	 * @return mixed
+	 */
+	function delete_login_access_token() {
+
+		$this->delete_meta( 'hma_2fa_login_access_token' );
+	}
+
+	/**
+	 * Verifies a supplied login access token against the one (if any) stored in the user's meta
+	 *
+	 * @return mixed
+	 */
+	function verify_login_access_token( $token ) {
+
+		$verified = false;
+
+		if ( $token && $this->get_login_access_token() === $token )
+			$verified = true;
+
+		return apply_filters( 'hma_2fa_user_verify_login_access_token', $verified );
 	}
 
 	/**
@@ -132,19 +178,24 @@ class HM_Accounts_2FA_User {
 		if ( $time_slot = HM_Accounts_2FA::verify_code( $code, $secret, $last_time_slot ) ) {
 
 			$verified = $time_slot;
-
 		}
 
 		return apply_filters( 'hma_2fa_user_verify_code', $verified, $this->user_id );
 	}
 
+	/**
+	 * Verifies the supplied code against the user's list of single use secret codes
+	 *
+	 * @param $code
+	 * @return mixed|void
+	 */
 	function verify_single_use_code( $code ) {
 
 		$verified = false;
 
 		foreach ( $this->get_single_use_secrets() as $secret ) {
 
-			if ( $secret == $code ) {
+			if ( $code && $secret === $code ) {
 
 				$verified = true;
 			}
@@ -153,11 +204,17 @@ class HM_Accounts_2FA_User {
 		return apply_filters( 'hma_2fa_user_verify_single_use_code', $verified, $this->user_id );
 	}
 
+	/**
+	 * Deletes a single use code from the user's list, called directly when the code has been used to authenticate
+	 *
+	 * @param $code
+	 * @return bool
+	 */
 	function delete_single_use_code( $code ) {
 
 		foreach ( $secrets = $this->get_single_use_secrets() as $key => $secret ) {
 
-			if ( $secret == $code ) {
+			if ( $secret === $code ) {
 
 				unset( $secrets[$key] );
 				$this->set_single_use_secrets( $secrets );
@@ -167,6 +224,14 @@ class HM_Accounts_2FA_User {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Authenticates the user (logs them in)
+	 */
+	function authenticate() {
+
+		wp_set_auth_cookie( $this->user_id );
 	}
 
 	/**

@@ -70,7 +70,7 @@ class HM_Accounts_2FA {
 			}
 		}
 
-		return apply_filters( 'hma_2fa_verify_code', $code, $secret, $last_login, $verified );
+		return apply_filters( 'hma_2fa_verify_code', $verified, $code, $secret, $last_login );
 	}
 
 	/**
@@ -119,9 +119,9 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		$encrypted = trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, $string, MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) ) );
+		$encrypted = trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(), $string, MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) ) );
 
-		return apply_filters( 'hma_2fa_encrypt_secret', $string, $encrypted );
+		return apply_filters( 'hma_2fa_encrypt_secret', $encrypted, $string );
 	}
 
 	/**
@@ -135,9 +135,28 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		$decrypted = trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, SECURE_AUTH_SALT, base64_decode( $string ), MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) );
+		$decrypted = trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(), base64_decode( $string ), MCRYPT_MODE_ECB, mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) );
 
-		return apply_filters( 'hma_2fa_encrypt_secret', $string, $decrypted );
+		return apply_filters( 'hma_2fa_decrypt_secret', $decrypted, $string );
+	}
+
+	/**
+	 * Get the secret key used for encrypting/decrypting our data
+	 *
+	 * @return string
+	 */
+	static function get_encryption_secret() {
+
+		if ( defined( 'HMA_2FA_ENCRYPTION_SECRET' ) ) {
+
+			$secret = HMA_2FA_ENCRYPTION_SECRET;
+
+		} else {
+
+			$secret = substr( SECURE_AUTH_KEY, 0, 31 );
+		}
+
+		return apply_filters( 'hma_2fa_encryption_secret', $secret );
 	}
 
 	/**
@@ -152,6 +171,6 @@ class HM_Accounts_2FA {
 			. rawurlencode( wp_get_current_user()->user_login ) . "?secret="
 			. $secret . "&issuer=" . rawurlencode( get_bloginfo( 'name' ) );
 
-		return apply_filters( 'hma_2fa_generate_qr_code_string', $secret, $qr_code );
+		return apply_filters( 'hma_2fa_generate_qr_code_string', $qr_code, $secret );
 	}
 }
