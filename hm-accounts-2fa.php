@@ -164,49 +164,81 @@ function hma_2fa_authenticate_interstitial( $user_authenticated, $username = '',
 
 	$user_2fa->set_login_access_token( $access_token );
 
-	//Template file has been created for the interstitial screen, use that
-	if ( $html_from_file = file_exists( $file_path = apply_filters( 'hma_2fa_authenticate_interstitial_template', get_template_directory() . '/login.hma_2fa.php' ) ) ) :
+	// Custom html
+	if ( $html = hma_2fa_get_custom_interstitial_html( $user_2fa, $access_token, $redirect_to ) ) {
 
-		include( $file_path );
-
+		echo $html;
 		exit;
+	}
 
-	//Custom html has been defined, use that
-	elseif ( $contents = apply_filters( 'hma_2fa_authenticate_interstitial_html', $user_2fa, $access_token, $redirect_to ) ) :
-
-		echo $contents;
-
-		exit;
-
-	//Default html
-	else: ?>
-
-		<div>
-			<p>
-				<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
-			</p>
-
-			<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
-				<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
-				<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $access_token ); ?>" />
-				<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
-
-				<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
-				<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
-				<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
-				<input type="submit" class="button" value="Submit" />
-			</form>
-
-		</div>
-
-		<?php $contents = ob_get_clean();
-
-		wp_die( $contents );
-
-	endif;
+	// Default html
+	wp_die( hma_2fa_get_default_interstitial_html( $user_2fa, $access_token, $redirect_to ) );
 }
 
 add_action( 'authenticate', 'hma_2fa_authenticate_interstitial', 900, 3 );
+
+
+/**
+ * Get the custom interstitial login form html - if custom html has not been set, we'll fall back to default
+ *
+ * @param $user_2fa
+ * @param $access_token
+ * @param $redirect_to
+ * @return bool|mixed|string|void
+ */
+function hma_2fa_get_custom_interstitial_html( $user_2fa, $access_token, $redirect_to ) {
+
+	//Template file has been created for the interstitial screen, use that
+	if ( $html_from_file = file_exists( $file_path = apply_filters( 'hma_2fa_authenticate_interstitial_template', get_template_directory() . '/login.hma_2fa.php' ) ) ) {
+
+		ob_start();
+
+		include( $file_path );
+
+		return ob_get_clean();
+
+	//Custom html has been defined, use that
+	} elseif ( $contents = apply_filters( 'hma_2fa_authenticate_interstitial_html', '', $user_2fa, $access_token, $redirect_to ) ) {
+
+		return $contents;
+	}
+
+	return false;
+}
+
+/**
+ * Get the default interstitial login form html
+ *
+ * @param $user_2fa
+ * @param $access_token
+ * @param $redirect_to
+ * @return string
+ */
+function hma_2fa_get_default_interstitial_html( $user_2fa, $access_token, $redirect_to ) {
+
+	ob_start() ?>
+
+	<div>
+		<p>
+			<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
+		</p>
+
+		<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
+			<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
+			<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $access_token ); ?>" />
+			<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
+
+			<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
+			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
+			<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
+			<input type="submit" class="button" value="Submit" />
+		</form>
+	</div>
+
+	<?php $html = ob_get_clean();
+
+	return $html;
+}
 
 /**
  * Authenticate the user's 2fa login attempt
