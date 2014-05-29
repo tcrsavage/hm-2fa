@@ -197,19 +197,23 @@ add_action( 'authenticate', 'hma_2fa_authenticate_code', 900, 3 );
  */
 function hma_2fa_authenticate_login() {
 
-	$user_id     = ! empty( $_POST['hma_2fa_login_user_id'] ) ? sanitize_text_field( $_POST['hma_2fa_login_user_id'] ) : '';
-	$redirect_to = ! empty( $_POST['redirect_to'] )           ? sanitize_text_field( $_POST['redirect_to'] )           : admin_url();
-	$referer     = ! empty( $_POST['referer'] )               ? sanitize_text_field( $_POST['referer'] )               : admin_url();
-	$login_token = ! empty( $_POST['hma_2fa_login_token'] )   ? sanitize_text_field( $_POST['hma_2fa_login_token'] )   : '';
-	$auth_code   = ! empty( $_POST['hma_2fa_auth_code'] )     ? sanitize_text_field( $_POST['hma_2fa_auth_code'] )     : '';
+	$args = array();
 
-	$user_2fa = HM_Accounts_2FA_User::get_instance( $user_id );
+	$args['user_id']     = ! empty( $_POST['hma_2fa_login_user_id'] ) ? sanitize_text_field( $_POST['hma_2fa_login_user_id'] ) : '';
+	$args['redirect_to'] = ! empty( $_POST['redirect_to'] )           ? sanitize_text_field( $_POST['redirect_to'] )           : admin_url();
+	$args['referer']     = ! empty( $_POST['referer'] )               ? sanitize_text_field( $_POST['referer'] )               : admin_url();
+	$args['login_token'] = ! empty( $_POST['hma_2fa_login_token'] )   ? sanitize_text_field( $_POST['hma_2fa_login_token'] )   : '';
+	$args['auth_code']   = ! empty( $_POST['hma_2fa_auth_code'] )     ? sanitize_text_field( $_POST['hma_2fa_auth_code'] )     : '';
+
+	$args = apply_filters( 'hma_2fa_authenticate_login_args', $args );
+
+	$user_2fa = HM_Accounts_2FA_User::get_instance( $args['user_id'] );
 
 	if ( is_wp_error( $user_2fa ) ) {
 
 		HM_Accounts_2FA::add_login_error( 'hma_2fa_invalid_request', 'Invalid auth request' );
 
-		wp_redirect( $referer );
+		wp_redirect( $args['referer'] );
 
 		exit;
 	}
@@ -217,7 +221,7 @@ function hma_2fa_authenticate_login() {
 	$authenticated = false;
 
 	// Verify the 2fa code, if verified, a timestamp will be returned with the last login time slot, otherwise false
-	if ( $time_slot = $user_2fa->verify_code( $auth_code ) && $user_2fa->verify_login_access_token( $login_token ) ) {
+	if ( $time_slot = $user_2fa->verify_code( $args['auth_code'] ) && $user_2fa->verify_login_access_token( $args['login_token'] ) ) {
 
 		// Update the last login, mitigates man in the middle attacks as we will ensure a minimum of 30 secs between
 		// successful login attempts
@@ -226,9 +230,9 @@ function hma_2fa_authenticate_login() {
 		$authenticated = true;
 
 	// 2fa code did not verify, check if it's a valid single use code
-	} else if ( $user_2fa->verify_single_use_code( $auth_code ) && $user_2fa->verify_login_access_token( $login_token ) ) {
+	} else if ( $user_2fa->verify_single_use_code( $args['auth_code'] ) && $user_2fa->verify_login_access_token( $args['login_token'] ) ) {
 
-		$user_2fa->delete_single_use_code( $auth_code );
+		$user_2fa->delete_single_use_code( $args['auth_code'] );
 
 		$authenticated = true;
 	}
