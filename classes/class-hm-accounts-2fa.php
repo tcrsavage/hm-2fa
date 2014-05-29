@@ -58,7 +58,7 @@ class HM_Accounts_2FA {
 				// meaning current login attempt has to be in the future compared to
 				// last successful login.
 				if ( $last_login >= ( $tm+$i ) ) {
-					error_log("Google Authenticator: Man-in-the-middle attack detected (Could also be 2 legit login attempts within the same 30 second period)");
+					error_log( "Google Authenticator: Man-in-the-middle attack detected (Could also be 2 legit login attempts within the same 30 second period)");
 					return false;
 				}
 
@@ -75,16 +75,33 @@ class HM_Accounts_2FA {
 	 *
 	 * @return string
 	 */
-	static function generate_secret() {
+	static function generate_secret( $char_count = 16 ) {
 
 		$chars  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; // allowed characters in Base32
 		$secret = '';
 
-		for ( $i = 0; $i < 16; $i++ ) {
+		for ( $i = 0; $i < $char_count; $i++ ) {
 			$secret .= substr( $chars, wp_rand( 0, strlen( $chars ) - 1 ), 1 );
 		}
 
 		return $secret;
+	}
+
+	/**
+	 * Generate 5 single use secret strings for use if standard 2fa isn't available to the user
+	 *
+	 * @return array
+	 */
+	static function generate_single_use_secrets() {
+
+		$codes = array();
+
+		for ( $i = 0; $i < 5; $i++ ) {
+
+			$codes[] = self::generate_secret( 32 );
+		}
+
+		return $codes;
 	}
 
 	/**

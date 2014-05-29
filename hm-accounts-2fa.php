@@ -17,8 +17,7 @@ require_once( 'inc/base32.php' );
  */
 function hma_2fa_admin_scripts() {
 
-	wp_register_script( 'qrcode_script', plugins_url( 'inc/jquery.qrcode.min.js', __FILE__ ), array( 'jquery' ) );
-	wp_enqueue_script( 'qrcode_script' );
+	wp_enqueue_script( 'hma_2fa_qr_code', plugins_url( 'inc/jquery.qrcode.min.js', __FILE__ ), array( 'jquery' ) );
 	wp_enqueue_script( 'hma_2fa_form_controller', plugins_url( 'inc/form_controller.js', __FILE__ ) );
 }
 
@@ -59,6 +58,10 @@ function hma_2fa_admin_fields( $user ) {
 
 					<div id="hma-2fa-qr-code" style="margin: 10px 1px 1px 1px;"></div>
 
+					<div id="hma-2fa-single-use-secrets" style="margin: 10px 1px 1px 1px; display: none;">
+						<span class="description">These are your single use secret keys, save them, print them off and store somewhere safe. These will be your only way of accessing your account if you lose your phone</span>
+					</div>
+
 					<span class="description"></span> <br />
 
 					<input type="button" id="hma-2fa-genarate-secret" value="Generate<?php echo ( $user_2fa->get_secret() ) ? ' new' : ''; ?>"  />
@@ -92,14 +95,20 @@ function hma_2fa_update_user_profile( $user_id ) {
 	if ( ! isset( $_POST['hma_2fa_is_enabled'] ) || ! isset( $_POST['hma_2fa_secret'] ) )
 		return;
 
-	$user_2fa = HM_Accounts_2FA_User::get_instance( $user_id );
-	$secret   = sanitize_text_field( $_POST['hma_2fa_secret'] );
+	$user_2fa   = HM_Accounts_2FA_User::get_instance( $user_id );
+	$secret     = sanitize_text_field( $_POST['hma_2fa_secret'] );
+	$single_use = array_map( 'sanitize_text_field', ! empty( $_POST['hm_accounts_2fa_single_use_secrets'] ) ? $_POST['hm_accounts_2fa_single_use_secrets'] : array() );
+
 	$enabled  = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret );
 
 	$user_2fa->set_2fa_enabled( $enabled );
 
 	if ( $secret ) {
 		$user_2fa->set_secret( $secret );
+	}
+
+	if ( $single_use ) {
+		$user_2fa->set_single_use_secrets( $single_use );
 	}
 }
 
@@ -114,7 +123,7 @@ add_action( 'hma_update_user_profile_completed', 'hma_2fa_update_user_profile' )
 function hma_2fa_login_form_extension() {
 	?>
 	<p>
-		<label title="If you don't have Google Authenticator enabled for your WordPress account, leave this field empty">Google Authenticator code
+		<label title="If you don't have Google Authenticator enabled for your WordPress account, leave this field empty">Auth Code
 			<span id="google-auth-info"></span><br />
 			<input type="text" name="hm_accounts_2fa_code" id="hm_accounts_2fa" class="input" value="" size="20" autocomplete="off" autocorrect="off" autocapitalize="off" />
 		</label>
@@ -136,6 +145,8 @@ function hma_2fa_authenticate_code( $user_authenticated, $username = '', $passwo
 
 	$user     = get_user_by( 'login', $username ) ? get_user_by( 'login', $username ) : get_user_by( 'email', $username );
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
+	$code     = ! empty( $_POST['hm_accounts_2fa_code'] ) ? sanitize_text_field( $_POST['hm_accounts_2fa_code'] ) : '';
+
 
 	// Bad user or 2FA isn't enabled - let other hooks handle this case
 	if ( ! $user || is_wp_error( $user_2fa ) || ! $user_2fa->get_2fa_enabled() ) {
@@ -143,17 +154,25 @@ function hma_2fa_authenticate_code( $user_authenticated, $username = '', $passwo
 	}
 
 	// Verify the 2fa code, if verified, a timestamp will be returned with the last login time slot, otherwise false
-	if ( $time_slot = $user_2fa->verify_code( ( ! empty( $_POST['hm_accounts_2fa_code'] ) ? $_POST['hm_accounts_2fa_code'] : '' ) ) ) {
+	if ( $time_slot = $user_2fa->verify_code( $code ) ) {
 
-		// update the last login, mitigates man in the middle attacks as we will ensure a minimum of 30 secs between
+		// Update the last login, mitigates man in the middle attacks as we will ensure a minimum of 30 secs between
 		// successful login attempts
 		$user_2fa->set_last_login( $time_slot );
 
 		return $user_authenticated;
 
+	// 2fa code did not verify, check if it's a valid single use code
+	} else if ( $user_2fa->verify_single_use_code( $code ) ) {
+
+		$user_2fa->delete_single_use_code( $code );
+
+		return $user_authenticated;
+
 	} else {
 
-		return new WP_Error( 'invalid_google_authenticator_token', 'Incorrect or expired 2 factor auth code' );
+		// The code did not verify
+		return new WP_Error( 'invalid_hma_2fa_token', 'Incorrect or expired 2 factor auth code' );
 	}
 
 }
@@ -165,11 +184,15 @@ add_action( 'authenticate', 'hma_2fa_authenticate_code', 50, 3 );
  */
 function hma_2fa_ajax_generate_secret_key() {
 
-	$secret = HM_Accounts_2FA::generate_secret();
+	$secret     = HM_Accounts_2FA::generate_secret();
+	$single_use = HM_Accounts_2FA::generate_single_use_secrets();
+	$qr_code    = HM_Accounts_2FA::generate_qr_code_string( $secret );
 
-	$qr_code = HM_Accounts_2FA::generate_qr_code_string( $secret );
-
-	echo json_encode( array( 'secret' => $secret, 'qr_code' => $qr_code ) );
+	echo json_encode( array(
+		'secret'                => $secret,
+		'single_use_secrets'    => $single_use,
+		'qr_code'               => $qr_code
+	) );
 
 	exit;
 }

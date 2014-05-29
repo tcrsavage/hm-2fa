@@ -64,11 +64,29 @@ jQuery( document).ready( function() {
 			jQuery( '#hma-2fa-qr-code' ).html( '' ).qrcode( code );
 		}
 
+		self.setSingleUseSecretsHtml = function( secrets ) {
+
+			var ul = jQuery( '<ul></ul>' );
+
+			var container = jQuery( '#hma-2fa-single-use-secrets' );
+
+			jQuery.each( secrets, function( index, secret ) {
+
+				var input = jQuery( '<input type="hidden" name="hm_accounts_2fa_single_use_secrets[]" />' ).val( secret );
+				var li    = jQuery( '<li></li>' ).text( secret ).append( input );
+
+				ul.append( li );
+			} );
+
+			container.find( 'ul' ).remove();
+			container.show().append( ul );
+		}
+
 		self.generateNewSecret = function() {
 
 			self.setAjaxLoading( true );
 
-			var data   = {
+			var data = {
 				action  : 'hma_2fa_generate_secret_key'
 			};
 
@@ -80,6 +98,8 @@ jQuery( document).ready( function() {
 					return;
 
 				self.setQRCodeHtml( response.qr_code );
+
+				self.setSingleUseSecretsHtml( response.single_use_secrets );
 
 				jQuery( '#hma-2fa-secret' ).val( response.secret );
 

@@ -47,6 +47,29 @@ class HM_Accounts_2FA_User {
 		return HM_Accounts_2FA::decrypt_secret( $this->get_meta( 'hm_accounts_2fa_secret' ) );
 	}
 
+	/**
+	 * Set an array of single use secret keys for the user
+	 *
+	 * @param $secrets
+	 */
+	function set_single_use_secrets( $secrets ) {
+
+		$secrets = array_map( array( 'HM_Accounts_2FA', 'encrypt_secret' ), $secrets );
+
+		$this->update_meta( 'hm_accounts_2fa_single_use_secrets', $secrets );
+	}
+
+	/**
+	 * Set an array of single use secret keys for the user
+	 *
+	 * @return array
+	 */
+	function get_single_use_secrets() {
+
+		$secrets = $this->get_meta( 'hm_accounts_2fa_single_use_secrets' );
+
+		return array_map( array( 'HM_Accounts_2FA', 'decrypt_secret' ), $secrets );
+	}
 
 	/**
 	 * Sets whether or not 2fa is enabled
@@ -112,6 +135,35 @@ class HM_Accounts_2FA_User {
 
 			return false;
 		}
+	}
+
+	function verify_single_use_code( $code ) {
+
+		foreach ( $this->get_single_use_secrets() as $secret ) {
+
+			if ( $secret == $code ) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function delete_single_use_code( $code ) {
+
+		foreach ( $secrets = $this->get_single_use_secrets() as $key => $secret ) {
+
+			if ( $secret == $code ) {
+
+				unset( $secrets[$key] );
+				$this->set_single_use_secrets( $secrets );
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
