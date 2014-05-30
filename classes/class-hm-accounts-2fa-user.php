@@ -131,7 +131,6 @@ class HM_Accounts_2FA_User {
 		return apply_filters( 'hma_2fa_user_get_last_login', $this->get_meta( 'hma_2fa_last_login' ), $this->user_id );
 	}
 
-
 	/**
 	 * Sets the login access token for the user
 	 *

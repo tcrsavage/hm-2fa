@@ -14,7 +14,6 @@
 			</td>
 		</tr>
 
-
 		<?php if ( $user_2fa->has_capability( get_current_user_id(), 'hide' ) ) : ?>
 
 			<tr>

@@ -17,6 +17,7 @@ jQuery( document).ready( function() {
 				if ( jQuery( this ).is( ':checked' ) ) {
 
 					self.showSecretSettings();
+
 				} else {
 
 					self.hideSecretSettings();

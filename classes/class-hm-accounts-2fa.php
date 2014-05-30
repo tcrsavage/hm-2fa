@@ -14,14 +14,17 @@ class HM_Accounts_2FA {
 
 		// Did the user enter 6 digits ?
 		if ( strlen( $code ) != 6 ) {
+
 			return false;
+
 		} else {
+
 			$code = intval( $code );
 		}
 
-		$verified   = false;
-		$tm         = floor( time() / 30 );
-		$secret_key = Base32::decode( $secret );
+		$verified     = false;
+		$tm           = floor( time() / 30 );
+		$secret_key   = Base32::decode( $secret );
 
 		$start_period = - ( $grace_period_minutes * 2 );
 		$end_period   =   ( $grace_period_minutes * 2 );
@@ -36,13 +39,13 @@ class HM_Accounts_2FA {
 			$hm = hash_hmac( 'SHA1', $time, $secret_key, true );
 
 			// Use last nipple of result as index/offset
-			$offset = ord(substr( $hm, -1 ) ) & 0x0F;
+			$offset = ord( substr( $hm, -1 ) ) & 0x0F;
 
 			// grab 4 bytes of the result
-			$hashpart = substr( $hm, $offset, 4 );
+			$hash_part = substr( $hm, $offset, 4 );
 
-			// Unpak binary value
-			$value = unpack( "N", $hashpart );
+			// Unpack binary value
+			$value = unpack( "N", $hash_part );
 			$value = $value[1];
 
 			// Only 32 bits
@@ -60,7 +63,7 @@ class HM_Accounts_2FA {
 					return false;
 				}
 
-				// Return timeslot in which login happened.
+				// Return time slot in which login happened.
 				$verified = $tm + $i;
 
 				break;
@@ -141,7 +144,6 @@ class HM_Accounts_2FA {
 
 		return apply_filters( 'hma_2fa_decrypt_secret', $decrypted, $string );
 	}
-
 
 	/**
 	 * Check if we are able to encrypt and decrypt

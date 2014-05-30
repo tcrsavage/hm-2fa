@@ -1,5 +1,4 @@
 <?php
-
 /*
 Plugin Name: HM Accounts 2FA
 Description: Adds 2 factor authentication to your WordPress site, working as a standalone plugin through cross integration with hm-accounts
@@ -101,7 +100,6 @@ add_action( 'personal_options_update', 'hma_2fa_update_user_profile' );
 add_action( 'edit_user_profile_update', 'hma_2fa_update_user_profile' );
 add_action( 'hma_update_user_profile_completed', 'hma_2fa_update_user_profile' );
 
-
 /**
  * Generate a new random 2fa key and qr code string
  */
@@ -121,7 +119,6 @@ function hma_2fa_ajax_generate_secret_key() {
 }
 
 add_action( 'wp_ajax_hma_2fa_generate_secret_key', 'hma_2fa_ajax_generate_secret_key' );
-
 
 /**
  * Hook into 'authenticate' filter and display 2fa interstitial auth screen
@@ -158,7 +155,6 @@ function hma_2fa_authenticate_interstitial( $user_authenticated, $username = '',
 }
 
 add_action( 'authenticate', 'hma_2fa_authenticate_interstitial', 900, 3 );
-
 
 /**
  * Get the custom interstitial login form html - if custom html has not been set, we'll fall back to default
@@ -287,7 +283,6 @@ function hma_2fa_authenticate_login() {
 add_action( 'admin_post_nopriv_hma_2fa_authenticate_login', 'hma_2fa_authenticate_login' );
 add_action( 'admin_post_hma_2fa_authenticate_login', 'hma_2fa_authenticate_login' );
 
-
 /**
  * Hook in to the WordPress login page error messages and display 2fa error messages if applicable
  */
@@ -323,7 +318,6 @@ function hma_2fa_display_admin_profile_update_errors( WP_Error $errors, $redirec
 }
 
 add_filter( 'user_profile_update_errors', 'hma_2fa_display_admin_profile_update_errors', 10, 2, 3 );
-
 
 /**
  * Clean up the error messages, they only need to be displayed on the first page load after failure
