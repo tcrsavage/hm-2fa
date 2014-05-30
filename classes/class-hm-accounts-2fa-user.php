@@ -182,16 +182,11 @@ class HM_Accounts_2FA_User {
 	/**
 	 * Check if a given user has the ability to edit/hide/full on this user
 	 *
-	 * If current_user is set to false, we assume to be checking the user's caps against themselves
-	 *
 	 * @param $current_user, $cap
 	 *
 	 * @return mixed
 	 */
-	function has_capability( $current_user = false, $cap ) {
-
-		if ( $current_user === false )
-			$current_user = $this->user_id;
+	function has_capability( $current_user, $cap ) {
 
 		switch ( $cap ) {
 
