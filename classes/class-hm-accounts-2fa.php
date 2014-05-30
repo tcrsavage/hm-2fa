@@ -2,8 +2,6 @@
 
 class HM_Accounts_2FA {
 
-	static $profile_errors = array();
-
 	/**
 	 * Verifies a supplied 2fa code against a supplied 2fa secret
 	 *
@@ -216,8 +214,9 @@ class HM_Accounts_2FA {
 	static function get_login_errors() {
 
 		$cookie = ! empty( $_COOKIE['hma_2fa_login_errors'] ) ? json_decode( stripslashes( $_COOKIE['hma_2fa_login_errors'] ) ) : array();
+		$errors = is_object( $cookie ) ? (array) $cookie : array();
 
-		return is_object( $cookie ) ? (array) $cookie : array();
+		return apply_filters( 'hma_2fa_get_login_errors', $errors );
 	}
 
 	/**
@@ -229,31 +228,41 @@ class HM_Accounts_2FA {
 	}
 
 	/**
-	 * Adds a profile page error to the list - generally there should only be one error in the list at a time
+	 * Adds a profile update error to the list - generally there should only be one error in the list at a time
 	 *
 	 * @param $code
 	 * @param $text
 	 */
-	static function add_profile_page_error( $code, $text ) {
+	static function add_profile_update_error( $code, $text ) {
 
-		self::$profile_errors[$code] = $text;
+		$errors = self::get_login_errors();
+
+		$errors[$code] = $text;
+
+		setcookie( 'hma_2fa_profile_update_errors', json_encode( $errors ), strtotime( '+1 week' ), '/' );
+
+		//Hack so that WordPress update profile can show the error - there's no page load to initialise the cookie
+		$_COOKIE['hma_2fa_profile_update_errors'] = json_encode( $errors );
 	}
 
 	/**
-	 * Gets the profile page errors errors
+	 * Gets the profile update errors
 	 *
 	 * @return array
 	 */
-	static function get_profile_page_errors() {
+	static function get_profile_update_errors() {
 
-		return self::$profile_errors;
+		$cookie = ! empty( $_COOKIE['hma_2fa_profile_update_errors'] ) ? json_decode( stripslashes( $_COOKIE['hma_2fa_profile_update_errors'] ) ) : array();
+		$errors = is_object( $cookie ) ? (array) $cookie : array();
+
+		return apply_filters( 'hma_2fa_get_profile_update_errors', $errors );
 	}
 
 	/**
 	 * Clears the profile page errors
 	 */
-	static function delete_profile_page_errors() {
+	static function delete_profile_update_errors() {
 
-		self::$profile_errors = array();
+		setcookie( 'hma_2fa_profile_update_errors', '', strtotime( '-1 week' ), '/' );
 	}
 }

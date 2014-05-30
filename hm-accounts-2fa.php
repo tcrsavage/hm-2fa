@@ -75,7 +75,7 @@ function hma_2fa_update_user_profile( $user_id ) {
 
 	if ( ! HM_Accounts_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
 
-		HM_Accounts_2FA::add_profile_page_error( 'hma_2fa_invalid_verify_secret', 'Either the 2FA verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again' );
+		HM_Accounts_2FA::add_profile_update_error( 'hma_2fa_invalid_verify_secret', 'Either the 2FA verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again' );
 		return;
 	}
 
@@ -291,7 +291,7 @@ add_action( 'admin_post_hma_2fa_authenticate_login', 'hma_2fa_authenticate_login
 /**
  * Hook in to the WordPress login page error messages and display 2fa error messages if applicable
  */
-function hma_2fa_display_login_page_errors( WP_Error $errors, $redirect_to ) {
+function hma_2fa_display_admin_login_page_errors( WP_Error $errors, $redirect_to ) {
 
 	foreach ( HM_Accounts_2FA::get_login_errors() as $code => $message ) {
 
@@ -304,25 +304,25 @@ function hma_2fa_display_login_page_errors( WP_Error $errors, $redirect_to ) {
 	return $errors;
 }
 
-add_filter( 'wp_login_errors', 'hma_2fa_display_login_page_errors', 10, 2 );
+add_filter( 'wp_login_errors', 'hma_2fa_display_admin_login_page_errors', 10, 2 );
 
 /**
  * Hook in to the WordPress login page error messages and display 2fa error messages if applicable
  */
-function hma_2fa_display_profile_page_errors( WP_Error $errors, $redirect_to, $user ) {
+function hma_2fa_display_admin_profile_update_errors( WP_Error $errors, $redirect_to, $user ) {
 
-	foreach ( HM_Accounts_2FA::get_profile_page_errors() as $code => $message ) {
+	foreach ( HM_Accounts_2FA::get_profile_update_errors() as $code => $message ) {
 
 		$errors->add( $code, $message );
 	}
 
 	//We've shown the errors, delete them from cache
-	HM_Accounts_2FA::delete_profile_page_errors();
+	HM_Accounts_2FA::delete_profile_update_errors();
 
 	return $errors;
 }
 
-add_filter( 'user_profile_update_errors', 'hma_2fa_display_profile_page_errors', 10, 2, 3 );
+add_filter( 'user_profile_update_errors', 'hma_2fa_display_admin_profile_update_errors', 10, 2, 3 );
 
 
 /**
@@ -331,6 +331,7 @@ add_filter( 'user_profile_update_errors', 'hma_2fa_display_profile_page_errors',
 function hma_2fa_clear_errors() {
 
 	HM_Accounts_2FA::delete_login_errors();
+	HM_Accounts_2FA::delete_profile_update_errors();
 }
 
 add_action( 'login_footer', 'hma_2fa_clear_errors' );
