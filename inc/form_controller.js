@@ -83,7 +83,7 @@ jQuery( document).ready( function() {
 			jQuery.each( secrets, function( index, secret ) {
 
 				var input = jQuery( '<input type="hidden" name="hm_accounts_2fa_single_use_secrets[]" />' ).val( secret );
-				var li    = jQuery( '<li></li>' ).text( secret ).append( input );
+				var li    = jQuery( '<li></li>' ).append( '<span>' + secret + '</span>').append( input )
 
 				ul.append( li );
 			} );
