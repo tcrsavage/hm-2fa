@@ -152,7 +152,8 @@ class HM_Accounts_2FA {
 
 		} else {
 
-			$secret = substr( SECURE_AUTH_KEY, 0, 31 );
+			$salt   = wp_salt( 'auth' );
+			$secret = substr( $salt, 0, 31 );
 		}
 
 		return apply_filters( 'hma_2fa_get_encryption_secret', $secret );
