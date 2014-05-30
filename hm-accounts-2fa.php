@@ -133,20 +133,20 @@ function hma_2fa_authenticate_interstitial( $user_authenticated, $username = '',
 		return $user_authenticated;
 	}
 
-	$access_token = $user_2fa->generate_login_access_token();
+	$login_token = $user_2fa->generate_login_access_token();
 	$redirect_to  = isset( $_POST['redirect_to'] ) ? sanitize_text_field( $_POST['redirect_to'] ) : admin_url();
 
-	$user_2fa->set_login_access_token( $access_token );
+	$user_2fa->set_login_access_token( $login_token );
 
 	// Custom html
-	if ( $html = hma_2fa_get_custom_interstitial_html( $user_2fa, $access_token, $redirect_to ) ) {
+	if ( $html = hma_2fa_get_custom_interstitial_html( $user_2fa, $login_token, $redirect_to ) ) {
 
 		echo $html;
 		exit;
 	}
 
 	// Default html
-	wp_die( hma_2fa_get_default_interstitial_html( $user_2fa, $access_token, $redirect_to ) );
+	wp_die( hma_2fa_get_default_interstitial_html( $user_2fa, $login_token, $redirect_to ) );
 }
 
 add_action( 'authenticate', 'hma_2fa_authenticate_interstitial', 900, 3 );
@@ -160,10 +160,10 @@ add_action( 'authenticate', 'hma_2fa_authenticate_interstitial', 900, 3 );
  * @param $redirect_to
  * @return bool|mixed|string|void
  */
-function hma_2fa_get_custom_interstitial_html( $user_2fa, $access_token, $redirect_to ) {
+function hma_2fa_get_custom_interstitial_html( $user_2fa, $login_token, $redirect_to ) {
 
 	//Template file has been created for the interstitial screen, use that
-	if ( $html_from_file = file_exists( $file_path = apply_filters( 'hma_2fa_authenticate_interstitial_template', get_template_directory() . '/login.hma_2fa.php' ) ) ) {
+	if ( file_exists( $file_path = apply_filters( 'hma_2fa_authenticate_interstitial_template', get_template_directory() . '/login.hma_2fa.php' ) ) ) {
 
 		ob_start();
 
@@ -172,7 +172,7 @@ function hma_2fa_get_custom_interstitial_html( $user_2fa, $access_token, $redire
 		return ob_get_clean();
 
 	//Custom html has been defined, use that
-	} elseif ( $contents = apply_filters( 'hma_2fa_authenticate_interstitial_html', '', $user_2fa, $access_token, $redirect_to ) ) {
+	} elseif ( $contents = apply_filters( 'hma_2fa_authenticate_interstitial_html', '', $user_2fa, $login_token, $redirect_to ) ) {
 
 		return $contents;
 	}
@@ -188,7 +188,7 @@ function hma_2fa_get_custom_interstitial_html( $user_2fa, $access_token, $redire
  * @param $redirect_to
  * @return string
  */
-function hma_2fa_get_default_interstitial_html( $user_2fa, $access_token, $redirect_to ) {
+function hma_2fa_get_default_interstitial_html( $user_2fa, $login_token, $redirect_to ) {
 
 	ob_start();
 
