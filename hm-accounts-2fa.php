@@ -228,7 +228,7 @@ function hma_2fa_authenticate_login() {
 	$authenticated = false;
 
 	// Verify the 2fa code, if verified, a timestamp will be returned with the last login time slot, otherwise false
-	if ( $time_slot = $user_2fa->verify_code( $args['auth_code'] ) && $user_2fa->verify_login_access_token( $args['login_token'] ) ) {
+	if ( ( $time_slot = $user_2fa->verify_code( $args['auth_code'] ) ) && $user_2fa->verify_login_access_token( $args['login_token'] ) ) {
 
 		// Update the last login, mitigates man in the middle attacks as we will ensure a minimum of 30 secs between
 		// successful login attempts
