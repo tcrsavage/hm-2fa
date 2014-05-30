@@ -342,7 +342,7 @@ add_action( 'wp_footer', 'hma_2fa_clear_errors' );
  */
 function hma_2fa_user_admin_notices() {
 
-	if ( HM_Accounts_2FA::is_encryption_available() ) {
+	if ( HM_Accounts_2FA::is_encryption_available() || ! current_user_can( 'administrator' ) ) {
 		return;
 	}
 
@@ -353,4 +353,4 @@ function hma_2fa_user_admin_notices() {
 	<?php
 }
 
-add_action( 'user_admin_notices', 'hma_2fa_user_admin_notices' );
+add_action( 'all_admin_notices', 'hma_2fa_user_admin_notices' );
