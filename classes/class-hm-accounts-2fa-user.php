@@ -163,6 +163,16 @@ class HM_Accounts_2FA_User {
 	}
 
 	/**
+	 * Generates a login token
+	 *
+	 * @return string
+	 */
+	function generate_login_access_token() {
+
+		return apply_filters( 'hma_2fa_user_generate_login_access_token', HM_Accounts_2FA::generate_secret( 64 ), $this->user_id );
+	}
+
+	/**
 	 * Verifies a supplied login access token against the one (if any) stored in the user's meta
 	 *
 	 * @return mixed
@@ -177,7 +187,6 @@ class HM_Accounts_2FA_User {
 
 		return apply_filters( 'hma_2fa_user_verify_login_access_token', $verified );
 	}
-
 
 	/**
 	 * Check if a given user has the ability to edit/hide/full on this user

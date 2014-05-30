@@ -133,7 +133,7 @@ function hma_2fa_authenticate_interstitial( $user_authenticated, $username = '',
 		return $user_authenticated;
 	}
 
-	$access_token = HM_Accounts_2FA::generate_user_login_secret( (int) $user->ID );
+	$access_token = $user_2fa->generate_login_access_token();
 	$redirect_to  = isset( $_POST['redirect_to'] ) ? sanitize_text_field( $_POST['redirect_to'] ) : admin_url();
 
 	$user_2fa->set_login_access_token( $access_token );
