@@ -2,6 +2,8 @@
 
 class HM_Accounts_2FA {
 
+	static $profile_errors = array();
+
 	/**
 	 * Verifies a supplied 2fa code against a supplied 2fa secret
 	 *
@@ -10,7 +12,7 @@ class HM_Accounts_2FA {
 	 * @param $last_login
 	 * @return bool|float
 	 */
-	static function verify_code( $code, $secret, $last_login ) {
+	static function verify_code( $code, $secret, $last_login, $grace_period_minutes = 0.5 ) {
 
 		// Did the user enter 6 digits ?
 		if ( strlen( $code ) != 6 ) {
@@ -23,8 +25,11 @@ class HM_Accounts_2FA {
 		$tm         = floor( time() / 30 );
 		$secret_key = Base32::decode( $secret );
 
+		$start_period = - ( $grace_period_minutes * 2 );
+		$end_period   =   ( $grace_period_minutes * 2 );
+
 		// Keys from 30 seconds before and after are valid aswell.
-		for ( $i = -1; $i <= 1; $i++ ) {
+		for ( $i = $start_period; $i <= $end_period; $i++ ) {
 
 			// Pack time into binary string
 			$time = chr( 0 ) . chr( 0 ) . chr( 0 ) . chr( 0 ) . pack( 'N*', $tm + $i );
@@ -221,5 +226,34 @@ class HM_Accounts_2FA {
 	static function delete_login_errors() {
 
 		setcookie( 'hma_2fa_login_errors', '', strtotime( '-1 week' ), '/' );
+	}
+
+	/**
+	 * Adds a profile page error to the list - generally there should only be one error in the list at a time
+	 *
+	 * @param $code
+	 * @param $text
+	 */
+	static function add_profile_page_error( $code, $text ) {
+
+		self::$profile_errors[$code] = $text;
+	}
+
+	/**
+	 * Gets the profile page errors errors
+	 *
+	 * @return array
+	 */
+	static function get_profile_page_errors() {
+
+		return self::$profile_errors;
+	}
+
+	/**
+	 * Clears the profile page errors
+	 */
+	static function delete_profile_page_errors() {
+
+		self::$profile_errors = array();
 	}
 }

@@ -23,7 +23,7 @@ jQuery( document).ready( function() {
 				}
 			} );
 
-			jQuery( '#hma-2fa-genarate-secret').click( function() {
+			jQuery( '#hma-2fa-generate-secret').click( function() {
 
 				self.generateNewSecret();
 			} );
@@ -42,6 +42,16 @@ jQuery( document).ready( function() {
 		self.hideSecretSettings = function() {
 
 			jQuery( '#hma-2fa-secret-settings').hide();
+		}
+
+		self.showNewSecretFields = function() {
+
+			jQuery( '#hma-2fa-new-secret-fields' ).show();
+		}
+
+		self.hideNewSecretFields = function() {
+
+			jQuery( '#hma-2fa-new-secret-fields').hide();
 		}
 
 		self.setAjaxLoading = function( bool ) {
@@ -100,6 +110,8 @@ jQuery( document).ready( function() {
 				self.setQRCodeHtml( response.qr_code );
 
 				self.setSingleUseSecretsHtml( response.single_use_secrets );
+
+				self.showNewSecretFields();
 
 				jQuery( '#hma-2fa-secret' ).val( response.secret );
 

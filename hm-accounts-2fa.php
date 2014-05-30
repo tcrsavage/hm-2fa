@@ -67,10 +67,17 @@ function hma_2fa_update_user_profile( $user_id ) {
 		return;
 	}
 
-	$secret     = sanitize_text_field( $_POST['hma_2fa_secret'] );
-	$single_use = array_map( 'sanitize_text_field', ! empty( $_POST['hm_accounts_2fa_single_use_secrets'] ) ? $_POST['hm_accounts_2fa_single_use_secrets'] : array() );
-	$enabled    = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret && HM_Accounts_2FA::is_encryption_available() );
-	$hidden     = ( ! empty( $_POST['hma_2fa_is_hidden'] ) );
+	$secret        = sanitize_text_field( $_POST['hma_2fa_secret'] );
+	$verify_secret = ( ! empty( $_POST['hma_2fa_secret_verify'] ) ) ? sanitize_text_field( $_POST['hma_2fa_secret_verify'] ) : '';
+	$single_use    = array_map( 'sanitize_text_field', ! empty( $_POST['hm_accounts_2fa_single_use_secrets'] ) ? $_POST['hm_accounts_2fa_single_use_secrets'] : array() );
+	$enabled       = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret && HM_Accounts_2FA::is_encryption_available() );
+	$hidden        = ( ! empty( $_POST['hma_2fa_is_hidden'] ) );
+
+	if ( ! HM_Accounts_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
+
+		HM_Accounts_2FA::add_profile_page_error( 'hma_2fa_invalid_verify_secret', 'Either the 2FA verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again' );
+		return;
+	}
 
 	if ( isset( $_POST['hma_2fa_is_hidden'] ) && $user_2fa->has_capability( get_current_user_id(), 'hide' ) ) {
 		$user_2fa->set_2fa_hidden( $hidden );
@@ -81,6 +88,7 @@ function hma_2fa_update_user_profile( $user_id ) {
 	}
 
 	if ( $secret ) {
+
 		$user_2fa->set_secret( $secret );
 	}
 
@@ -298,18 +306,36 @@ function hma_2fa_display_login_page_errors( WP_Error $errors, $redirect_to ) {
 
 add_filter( 'wp_login_errors', 'hma_2fa_display_login_page_errors', 10, 2 );
 
+/**
+ * Hook in to the WordPress login page error messages and display 2fa error messages if applicable
+ */
+function hma_2fa_display_profile_page_errors( WP_Error $errors, $redirect_to, $user ) {
+
+	foreach ( HM_Accounts_2FA::get_profile_page_errors() as $code => $message ) {
+
+		$errors->add( $code, $message );
+	}
+
+	//We've shown the errors, delete them from cache
+	HM_Accounts_2FA::delete_profile_page_errors();
+
+	return $errors;
+}
+
+add_filter( 'user_profile_update_errors', 'hma_2fa_display_profile_page_errors', 10, 2, 3 );
+
 
 /**
  * Clean up the error messages, they only need to be displayed on the first page load after failure
  */
-function hma_2fa_clear_login_errors() {
+function hma_2fa_clear_errors() {
 
 	HM_Accounts_2FA::delete_login_errors();
 }
 
-add_action( 'login_footer', 'hma_2fa_clear_login_errors' );
-add_action( 'admin_footer', 'hma_2fa_clear_login_errors' );
-add_action( 'wp_footer', 'hma_2fa_clear_login_errors' );
+add_action( 'login_footer', 'hma_2fa_clear_errors' );
+add_action( 'admin_footer', 'hma_2fa_clear_errors' );
+add_action( 'wp_footer', 'hma_2fa_clear_errors' );
 
 /**
  * Display an admin warning if encryption isn't available
