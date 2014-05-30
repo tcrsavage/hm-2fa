@@ -204,11 +204,7 @@ class HM_Accounts_2FA_User {
 				break;
 
 			case 'hide' :
-				$has_cap = user_can( $current_user, 'administrator' );
-				break;
-
-			case 'full' :
-				$has_cap = user_can( $current_user, 'administrator' );
+				$has_cap = user_can( $current_user, 'administrator' ) && ! user_can( $this->user_id, 'administrator' ) ;
 				break;
 
 			default :
