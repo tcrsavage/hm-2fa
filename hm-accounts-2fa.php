@@ -69,7 +69,7 @@ function hma_2fa_update_user_profile( $user_id ) {
 
 	$secret     = sanitize_text_field( $_POST['hma_2fa_secret'] );
 	$single_use = array_map( 'sanitize_text_field', ! empty( $_POST['hm_accounts_2fa_single_use_secrets'] ) ? $_POST['hm_accounts_2fa_single_use_secrets'] : array() );
-	$enabled    = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret );
+	$enabled    = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret && HM_Accounts_2FA::is_encryption_available() );
 	$hidden     = ( ! empty( $_POST['hma_2fa_is_hidden'] ) );
 
 	if ( isset( $_POST['hma_2fa_is_hidden'] ) && $user_2fa->has_capability( get_current_user_id(), 'hide' ) ) {
@@ -225,6 +225,15 @@ function hma_2fa_authenticate_login() {
 		exit;
 	}
 
+	if ( ! HM_Accounts_2FA::is_encryption_available() ) {
+
+		HM_Accounts_2FA::add_login_error( 'hma_2fa_encryption_not_available', 'Unable to decrypt auth key. Please contact the site administrator' );
+
+		wp_redirect( $args['referer'] );
+
+		exit;
+	}
+
 	$authenticated = false;
 
 	// Verify the 2fa code, if verified, a timestamp will be returned with the last login time slot, otherwise false
@@ -301,3 +310,21 @@ function hma_2fa_clear_login_errors() {
 add_action( 'login_footer', 'hma_2fa_clear_login_errors' );
 add_action( 'admin_footer', 'hma_2fa_clear_login_errors' );
 add_action( 'wp_footer', 'hma_2fa_clear_login_errors' );
+
+/**
+ * Display an admin warning if encryption isn't available
+ */
+function hma_2fa_user_admin_notices() {
+
+	if ( HM_Accounts_2FA::is_encryption_available() ) {
+		return;
+	}
+
+	?>
+	<div class="error">
+		<p>HM Accounts 2FA requires PHP MCrypt or use of custom encryption methods via use of filters in order to function.</p>
+	</div>
+	<?php
+}
+
+add_action( 'user_admin_notices', 'hma_2fa_user_admin_notices' );
