@@ -68,7 +68,7 @@ class HM_Accounts_2FA_User {
 
 		$secrets = $this->get_meta( 'hma_2fa_single_use_secrets' );
 
-		return array_map( array( 'HM_Accounts_2FA', 'decrypt_secret' ), $secrets );
+		return apply_filters( 'hma_2fa_get_single_use_secrets', array_map( array( 'HM_Accounts_2FA', 'decrypt_secret' ), $secrets ), $this->user_id );
 	}
 
 	/**
