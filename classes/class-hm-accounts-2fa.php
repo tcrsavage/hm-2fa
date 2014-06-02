@@ -230,7 +230,7 @@ class HM_Accounts_2FA {
 
 		?>
 		<script type="text/javascript">
-			document.cookie = 'hma_2fa_login_errors=""'; path=<?php echo COOKIEPATH; ?>';
+			document.cookie = 'hma_2fa_login_errors=""; path=<?php echo COOKIEPATH; ?>';
 		</script>
 		<?php
 	}
@@ -275,7 +275,7 @@ class HM_Accounts_2FA {
 
 		?>
 		<script type="text/javascript">
-			document.cookie = 'hma_2fa_profile_update_errors=""'; path=<?php echo COOKIEPATH; ?>';
+			document.cookie = 'hma_2fa_profile_update_errors=""; path=<?php echo COOKIEPATH; ?>';
 		</script>
 		<?php
 	}
