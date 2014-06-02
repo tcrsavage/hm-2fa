@@ -130,6 +130,9 @@ add_action( 'wp_ajax_hma_2fa_generate_secret_key', 'hma_2fa_ajax_generate_secret
  */
 function hma_2fa_authenticate_interstitial( $user_authenticated, $username = '', $password = '' ) {
 
+	global $wp_query;
+	$wp_query->is_login_interstitial = true;
+
 	$user     = get_user_by( 'login', $username );
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $user );
 
@@ -352,3 +355,12 @@ function hma_2fa_user_admin_notices() {
 }
 
 add_action( 'all_admin_notices', 'hma_2fa_user_admin_notices' );
+
+add_filter( 'body_class', function( $classes ) {
+
+	if ( get_query_var( 'is_login_interstitial' ) );
+		$classes[] = 'login-interstitial';
+
+	return $classes;
+
+} );
