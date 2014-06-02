@@ -204,7 +204,9 @@ class HM_Accounts_2FA {
 
 		$errors[$code] = $text;
 
-		setcookie( 'hma_2fa_login_errors', json_encode( $errors ), strtotime( '+1 week' ), '/' );
+		do_action( 'hma_2fa_add_login_error', $code, $text, $errors );
+
+		setcookie( 'hma_2fa_login_errors', json_encode( $errors ), strtotime( '+1 week' ), COOKIEPATH );
 
 	}
 
@@ -226,7 +228,11 @@ class HM_Accounts_2FA {
 	 */
 	static function delete_login_errors() {
 
-		setcookie( 'hma_2fa_login_errors', '', strtotime( '-1 week' ), '/' );
+		?>
+		<script type="text/javascript">
+			document.cookie = 'hma_2fa_login_errors=""'; path=<?php echo COOKIEPATH; ?>';
+		</script>
+		<?php
 	}
 
 	/**
@@ -240,6 +246,8 @@ class HM_Accounts_2FA {
 		$errors = self::get_login_errors();
 
 		$errors[$code] = $text;
+
+		do_action( 'hma_2fa_add_profile_update_error', $code, $text, $errors );
 
 		setcookie( 'hma_2fa_profile_update_errors', json_encode( $errors ), strtotime( '+1 week' ), '/' );
 
@@ -265,6 +273,10 @@ class HM_Accounts_2FA {
 	 */
 	static function delete_profile_update_errors() {
 
-		setcookie( 'hma_2fa_profile_update_errors', '', strtotime( '-1 week' ), '/' );
+		?>
+		<script type="text/javascript">
+			document.cookie = 'hma_2fa_profile_update_errors=""'; path=<?php echo COOKIEPATH; ?>';
+		</script>
+		<?php
 	}
 }
