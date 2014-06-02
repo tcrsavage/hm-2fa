@@ -216,6 +216,9 @@ function hma_2fa_authenticate_login() {
 	$args['login_token'] = ! empty( $_POST['hma_2fa_login_token'] )   ? sanitize_text_field( $_POST['hma_2fa_login_token'] )   : '';
 	$args['auth_code']   = ! empty( $_POST['hma_2fa_auth_code'] )     ? sanitize_text_field( $_POST['hma_2fa_auth_code'] )     : '';
 
+	//query arg so static page caching doesn't interfere with displaying error messages if the auth fails
+	$args['referer']     = add_query_arg( array( 'submitted' => time() ), $args['referer'] );
+
 	$args = apply_filters( 'hma_2fa_authenticate_login_args', $args );
 
 	$user_2fa = HM_Accounts_2FA_User::get_instance( $args['user_id'] );
