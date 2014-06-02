@@ -118,10 +118,15 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		$encrypted = trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(),
-			$string, MCRYPT_MODE_ECB,
-			mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) )
-		) );
+		$encrypted = '';
+
+		if ( function_exists( 'mcrypt_encrypt' ) ) {
+
+			$encrypted = trim( base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(),
+					$string, MCRYPT_MODE_ECB,
+					mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) )
+			) );
+		}
 
 		return apply_filters( 'hma_2fa_encrypt_secret', $encrypted, $string );
 	}
@@ -137,10 +142,15 @@ class HM_Accounts_2FA {
 		if ( $string === '' )
 			return $string;
 
-		$decrypted = trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(),
-			base64_decode( $string ), MCRYPT_MODE_ECB,
-			mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND )
-		) );
+		$decrypted = '';
+
+		if ( function_exists( 'mcrypt_decrypt' ) ) {
+
+			$decrypted = trim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, self::get_encryption_secret(),
+				base64_decode( $string ), MCRYPT_MODE_ECB,
+				mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND )
+			) );
+		}
 
 		return apply_filters( 'hma_2fa_decrypt_secret', $decrypted, $string );
 	}
