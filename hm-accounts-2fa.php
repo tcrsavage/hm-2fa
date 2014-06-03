@@ -12,15 +12,15 @@ require_once( 'classes/class-hm-accounts-2fa-user.php' );
 require_once( 'inc/base32.php' );
 
 /**
- * Enqueue the admin scripts
+ * Enqueue the profile editing scripts
  */
-function hma_2fa_admin_scripts() {
+function hma_2fa_enqueue_profile_edit_scripts( $in_footer = false ) {
 
-	wp_enqueue_script( 'hma_2fa_qr_code', plugins_url( 'inc/jquery.qrcode.min.js', __FILE__ ), array( 'jquery' ) );
-	wp_enqueue_script( 'hma_2fa_form_controller', plugins_url( 'inc/form_controller.js', __FILE__ ) );
+	wp_enqueue_script( 'hma_2fa_qr_code', plugins_url( 'inc/jquery.qrcode.min.js', __FILE__ ), array(), 0.1, $in_footer );
+	wp_enqueue_script( 'hma_2fa_form_controller', plugins_url( 'inc/form_controller.js', __FILE__ ),  array(), 0.1, $in_footer );
 }
 
-add_action( 'admin_enqueue_scripts', 'hma_2fa_admin_scripts' );
+add_action( 'admin_enqueue_scripts', 'hma_2fa_enqueue_profile_edit_scripts' );
 
 /**
  * Add the 2fa fields to the admin screen
