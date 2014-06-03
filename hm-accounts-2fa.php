@@ -300,9 +300,6 @@ function hma_2fa_display_admin_login_page_errors( WP_Error $errors, $redirect_to
 		$errors->add( $code, $message );
 	}
 
-	//We've shown the errors, delete them from cache
-	HM_Accounts_2FA::delete_login_errors();
-
 	return $errors;
 }
 

@@ -258,7 +258,7 @@ class HM_Accounts_2FA {
 
 		do_action( 'hma_2fa_add_profile_update_error', $code, $text, $errors );
 
-		setcookie( 'hma_2fa_profile_update_errors', json_encode( $errors ), strtotime( '+1 week' ), '/' );
+		setcookie( 'hma_2fa_profile_update_errors', json_encode( $errors ), strtotime( '+1 week' ), COOKIEPATH );
 
 		//Hack so that WordPress update profile can show the error - there's no page load to initialise the cookie
 		$_COOKIE['hma_2fa_profile_update_errors'] = json_encode( $errors );
