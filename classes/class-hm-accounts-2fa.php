@@ -162,7 +162,6 @@ class HM_Accounts_2FA {
 	 * @return bool
 	 */
 	static function is_encryption_available() {
-
 		return ( function_exists( 'mcrypt_encrypt' ) && function_exists( 'mcrypt_decrypt' ) )
 			|| ( has_filter( 'hma_2fa_encrypt_secret' ) && has_filter( 'hma_2fa_decrypt_secret' ) );
 	}

@@ -154,7 +154,8 @@ function hma_2fa_authenticate_interstitial( $user_authenticated, $username = '',
 	}
 
 	// Default html
-	wp_die( hma_2fa_get_default_interstitial_html( $user_2fa, $login_token, $redirect_to ) );
+	echo hma_2fa_get_default_interstitial_html( $user_2fa, $login_token, $redirect_to );
+	exit;
 }
 
 add_action( 'authenticate', 'hma_2fa_authenticate_interstitial', 900, 3 );

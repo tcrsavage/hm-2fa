@@ -2,19 +2,40 @@
 <?php /* @var string $login_token */ ?>
 <?php /* @var string $redirect_to */ ?>
 
-<div>
-	<p>
-		<span>This account has 2 factor authentication enabled. Please supply a 2 factor auth key</span>
-	</p>
+<?php login_header(); ?>
 
-	<form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
-		<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
-		<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $login_token ); ?>" />
-		<input type="text" name="hma_2fa_auth_code" style="width: 150px; height: 18px; padding: 3px; font-size: 18px;" value="" />
+		<form name="loginform" id="loginform" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post" style="padding-bottom: 25px">
+			<p>
+				<label for="user_login">Auth key<br />
+				<input type="text" id="hma-2fa-auth-code" name="hma_2fa_auth_code" value="" />
+			</p>
 
-		<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
-		<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
-		<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
-		<input type="submit" class="button" value="Submit" />
-	</form>
-</div>
+			<p class="submit">
+				<input type="hidden" name="hma_2fa_login_user_id" value="<?php echo esc_attr( $user_2fa->user_id ); ?>" />
+				<input type="hidden" name="hma_2fa_login_token" value="<?php echo esc_attr( $login_token ); ?>" />
+
+
+				<input type="hidden" name="action" value="hma_2fa_authenticate_login" >
+				<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>" />
+				<input type="hidden" name="referer" value="<?php echo esc_url( wp_get_referer() ); ?>" />
+
+				<input type="submit" id="wp-submit" class="button button-primary button-large" value="Authenticate" />
+			</p>
+
+		</form>
+
+		<script type="text/javascript">
+			function wp_attempt_focus(){
+				setTimeout( function(){ try{
+					d = document.getElementById( 'hma-2fa-auth-code' );
+
+					console.log( d );
+					d.focus();
+					d.select();
+				} catch(e){}
+				}, 200);
+			}
+			wp_attempt_focus();
+		</script>
+
+<?php login_footer(); ?>
