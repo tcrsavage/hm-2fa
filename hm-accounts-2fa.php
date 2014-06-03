@@ -50,7 +50,7 @@ add_action( 'edit_user_profile', 'hma_2fa_edit_profile_fields' );
  */
 function hma_2fa_update_user_profile( $user_id ) {
 
-	if ( ! $user_id ) {
+	if ( ! $user_id || ! is_numeric( $user_id ) ) {
 		$user_id = get_current_user_id();
 	}
 
@@ -69,7 +69,7 @@ function hma_2fa_update_user_profile( $user_id ) {
 	$secret        = sanitize_text_field( $_POST['hma_2fa_secret'] );
 	$verify_secret = ( ! empty( $_POST['hma_2fa_secret_verify'] ) ) ? sanitize_text_field( $_POST['hma_2fa_secret_verify'] ) : '';
 	$single_use    = array_map( 'sanitize_text_field', ! empty( $_POST['hm_accounts_2fa_single_use_secrets'] ) ? $_POST['hm_accounts_2fa_single_use_secrets'] : array() );
-	$enabled       = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && $secret && HM_Accounts_2FA::is_encryption_available() );
+	$enabled       = ( ! empty( $_POST['hma_2fa_is_enabled'] ) && ( $secret || $user_2fa->get_secret() ) && HM_Accounts_2FA::is_encryption_available() );
 	$hidden        = ( ! empty( $_POST['hma_2fa_is_hidden'] ) );
 
 	if ( ! HM_Accounts_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
@@ -87,7 +87,6 @@ function hma_2fa_update_user_profile( $user_id ) {
 	}
 
 	if ( $secret ) {
-
 		$user_2fa->set_secret( $secret );
 	}
 
@@ -215,10 +214,11 @@ function hma_2fa_authenticate_login() {
 	$args = array();
 
 	$args['user_id']     = ! empty( $_POST['hma_2fa_login_user_id'] ) ? sanitize_text_field( $_POST['hma_2fa_login_user_id'] ) : '';
-	$args['redirect_to'] = ! empty( $_POST['redirect_to'] )           ? sanitize_text_field( $_POST['redirect_to'] )           : admin_url();
-	$args['referer']     = ! empty( $_POST['referer'] )               ? sanitize_text_field( $_POST['referer'] )               : admin_url();
 	$args['login_token'] = ! empty( $_POST['hma_2fa_login_token'] )   ? sanitize_text_field( $_POST['hma_2fa_login_token'] )   : '';
 	$args['auth_code']   = ! empty( $_POST['hma_2fa_auth_code'] )     ? sanitize_text_field( $_POST['hma_2fa_auth_code'] )     : '';
+
+	$args['redirect_to'] = ! empty( $_POST['redirect_to'] )           ?  $_POST['redirect_to']                                 : admin_url();
+	$args['referer']     = ! empty( $_POST['referer'] )               ?  $_POST['referer']                                     : admin_url();
 
 	//query arg so static page caching doesn't interfere with displaying error messages if the auth fails
 	$args['referer']     = add_query_arg( array( 'submitted' => time() ), $args['referer'] );
