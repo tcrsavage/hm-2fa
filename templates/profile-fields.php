@@ -11,6 +11,9 @@
 			<td>
 				<input name="hma_2fa_is_enabled" type="hidden" value="0" />
 				<input id="hma-2fa-is-enabled" name="hma_2fa_is_enabled" type="checkbox" <?php checked( $user_2fa->get_2fa_enabled() ); ?> value="1" />
+				<?php if (  $user_2fa->get_2fa_enabled()  ) : ?>
+					<span class="description">2 factor authentication is currently enabled</span>
+				<?php endif; ?>
 			</td>
 		</tr>
 

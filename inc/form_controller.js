@@ -114,7 +114,7 @@ jQuery( document).ready( function() {
 
 				self.showNewSecretFields();
 
-				jQuery( '#hma-2fa-secret' ).val( response.secret );
+				jQuery( '#hma-2fa-secret' ).val( response.secret ).focus();
 
 				jQuery( '#hma-2fa-generate-secret' ).hide();
 
