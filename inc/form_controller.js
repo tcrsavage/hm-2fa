@@ -1,4 +1,4 @@
-jQuery( document).ready( function() {
+jQuery( document ).ready( function() {
 
 	var hma2FAFormController = new function() {
 
@@ -24,7 +24,7 @@ jQuery( document).ready( function() {
 				}
 			} );
 
-			jQuery( '#hma-2fa-generate-secret').click( function() {
+			jQuery( '#hma-2fa-generate-secret' ).click( function() {
 
 				self.generateNewSecret();
 			} );
@@ -37,12 +37,12 @@ jQuery( document).ready( function() {
 
 		self.showSecretSettings = function() {
 
-			jQuery( '#hma-2fa-secret-settings').show();
+			jQuery( '#hma-2fa-secret-settings' ).show();
 		}
 
 		self.hideSecretSettings = function() {
 
-			jQuery( '#hma-2fa-secret-settings').hide();
+			jQuery( '#hma-2fa-secret-settings' ).hide();
 		}
 
 		self.showNewSecretFields = function() {
@@ -52,7 +52,7 @@ jQuery( document).ready( function() {
 
 		self.hideNewSecretFields = function() {
 
-			jQuery( '#hma-2fa-new-secret-fields').hide();
+			jQuery( '#hma-2fa-new-secret-fields' ).hide();
 		}
 
 		self.setAjaxLoading = function( bool ) {
