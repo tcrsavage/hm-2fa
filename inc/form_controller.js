@@ -116,6 +116,8 @@ jQuery( document).ready( function() {
 
 				jQuery( '#hma-2fa-secret' ).val( response.secret );
 
+				jQuery( '#hma-2fa-generate-secret' ).hide();
+
 			} , 'json' );
 		}
 	};
