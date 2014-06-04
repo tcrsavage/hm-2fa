@@ -7,6 +7,8 @@ Version: 0.1
 Author URI: http://humanmade.co.uk/
 */
 
+define( 'HM_ACCOUNTS_2FA_VERSION', 0.1 );
+
 require_once( 'classes/class-hm-accounts-2fa.php' );
 require_once( 'classes/class-hm-accounts-2fa-user.php' );
 require_once( 'inc/base32.php' );
@@ -14,10 +16,12 @@ require_once( 'inc/base32.php' );
 /**
  * Enqueue the profile editing scripts
  */
-function hma_2fa_enqueue_profile_edit_scripts( $in_footer = false ) {
+function hma_2fa_enqueue_profile_edit_scripts( $in_footer = false, $require_jquery = true ) {
 
-	wp_enqueue_script( 'hma_2fa_qr_code', plugins_url( 'inc/jquery.qrcode.min.js', __FILE__ ), array(), 0.1, $in_footer );
-	wp_enqueue_script( 'hma_2fa_form_controller', plugins_url( 'inc/form_controller.js', __FILE__ ),  array(), 0.1, $in_footer );
+	$requires = $require_jquery ? array( 'jquery' ) : array();
+
+	wp_enqueue_script( 'hma_2fa_qr_code', plugins_url( 'inc/jquery.qrcode.min.js', __FILE__ ), $requires, HM_ACCOUNTS_2FA_VERSION, $in_footer );
+	wp_enqueue_script( 'hma_2fa_form_controller', plugins_url( 'inc/form_controller.js', __FILE__ ),  array_merge( $requires, array( 'hma_2fa_qr_code' ) ), HM_ACCOUNTS_2FA_VERSION, $in_footer );
 }
 
 add_action( 'admin_enqueue_scripts', 'hma_2fa_enqueue_profile_edit_scripts' );
