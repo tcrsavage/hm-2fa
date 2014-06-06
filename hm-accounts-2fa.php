@@ -78,7 +78,7 @@ function hma_2fa_update_user_profile( $user_id ) {
 
 	if ( ! HM_Accounts_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
 
-		HM_Accounts_2FA::add_profile_update_error( 'hma_2fa_invalid_verify_secret', 'Either the 2FA verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again' );
+		HM_Accounts_2FA::add_message( 'Either the 2FA verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again', 'profile_update', 'error' );
 		return;
 	}
 
@@ -239,7 +239,7 @@ function hma_2fa_authenticate_login() {
 
 	if ( is_wp_error( $user_2fa ) ) {
 
-		HM_Accounts_2FA::add_login_error( 'hma_2fa_invalid_request', 'Invalid auth request' );
+		HM_Accounts_2FA::add_message( 'Invalid auth request', 'login', 'error' );
 
 		wp_redirect( $args['referer'] );
 
@@ -248,7 +248,7 @@ function hma_2fa_authenticate_login() {
 
 	if ( ! HM_Accounts_2FA::is_encryption_available() ) {
 
-		HM_Accounts_2FA::add_login_error( 'hma_2fa_encryption_not_available', 'Unable to decrypt auth key. Please contact the site administrator' );
+		HM_Accounts_2FA::add_message( 'Unable to decrypt auth key. Please contact the site administrator', 'login', 'error' );
 
 		wp_redirect( $args['referer'] );
 
@@ -271,6 +271,10 @@ function hma_2fa_authenticate_login() {
 
 		$user_2fa->delete_single_use_code( $args['auth_code'] );
 
+		$single_use_notice = apply_filters( 'hma_2fa_single_use_key_used_notice', sprintf( 'You have just used a single use code to log in, please update your 2 factor authentication settings <a href="%s">here</a>', admin_url( 'profile.php#hma-2fa' ) ), $user_2fa );
+
+		HM_Accounts_2FA::add_message( $single_use_notice, 'logged_in', 'error' );
+
 		$authenticated = true;
 	}
 
@@ -289,7 +293,7 @@ function hma_2fa_authenticate_login() {
 
 	} else {
 
-		HM_Accounts_2FA::add_login_error( 'hma_2fa_invalid_request', 'Invalid 2 factor auth key' );
+		HM_Accounts_2FA::add_message( 'Invalid 2 factor auth key', 'login', 'error' );
 
 		wp_redirect( $args['referer'] );
 
@@ -305,24 +309,24 @@ add_action( 'admin_post_hma_2fa_authenticate_login', 'hma_2fa_authenticate_login
  */
 function hma_2fa_display_admin_login_page_errors( WP_Error $errors, $redirect_to ) {
 
-	foreach ( HM_Accounts_2FA::get_login_errors() as $code => $message ) {
+	foreach ( HM_Accounts_2FA::get_messages( 'login', 'error' ) as $key => $error ) {
 
-		$errors->add( $code, $message );
+		$errors->add( 'hma_2fa_login_error', $error['text'] );
 	}
 
 	return $errors;
 }
 
-add_filter( 'wp_login_errors', 'hma_2fa_display_admin_login_page_errors', 10, 2 );
+add_filter( 'wp_login_errors', 'hma_2fa_display_admin_login_page_messages', 10, 2 );
 
 /**
  * Hook in to the WordPress login page error messages and display 2fa error messages if applicable
  */
 function hma_2fa_display_admin_profile_update_errors( WP_Error $errors ) {
 
-	foreach ( HM_Accounts_2FA::get_profile_update_errors() as $code => $message ) {
+	foreach ( HM_Accounts_2FA::get_messages( 'profile_update', 'error' ) as $key => $error ) {
 
-		$errors->add( $code, $message );
+		$errors->add( 'hma_2fa_profile_update_error', $error['text'] );
 	}
 
 	return $errors;
@@ -331,36 +335,51 @@ function hma_2fa_display_admin_profile_update_errors( WP_Error $errors ) {
 add_filter( 'user_profile_update_errors', 'hma_2fa_display_admin_profile_update_errors' );
 
 /**
- * Clean up the error messages, they only need to be displayed on the first page load after failure
+ * Clean up the messages, they only need to be displayed on the first page load
  */
-function hma_2fa_clear_errors() {
+function hma_2fa_clear_messages() {
 
-	HM_Accounts_2FA::delete_login_errors();
-	HM_Accounts_2FA::delete_profile_update_errors();
+	HM_Accounts_2FA::delete_messages();
 }
 
-add_action( 'login_footer', 'hma_2fa_clear_errors' );
-add_action( 'admin_footer', 'hma_2fa_clear_errors' );
-add_action( 'wp_footer', 'hma_2fa_clear_errors' );
+add_action( 'login_footer', 'hma_2fa_clear_messages' );
+add_action( 'admin_footer', 'hma_2fa_clear_messages' );
+add_action( 'wp_footer', 'hma_2fa_clear_messages' );
 
 /**
- * Display an admin warning if encryption isn't available
+ * Display logged_in_only messages on the admin screen
  */
-function hma_2fa_user_admin_notices() {
+function hma_2fa_admin_notices() {
 
-	if ( HM_Accounts_2FA::is_encryption_available() || ! current_user_can( 'administrator' ) ) {
+	var_dump( HM_Accounts_2FA::get_messages( 'logged_in' ) );
+
+	foreach ( HM_Accounts_2FA::get_messages( 'logged_in' ) as $notice ) : ?>
+
+		<div class="<?php echo $notice['type']; ?>">
+			<p><?php echo $notice['text']; ?></p>
+		</div>
+
+	<?php endforeach;
+}
+
+add_action( 'all_admin_notices', 'hma_2fa_admin_notices' );
+
+
+/**
+ * Add an encryption unavailable message to the admin if encryption isn't available
+ */
+function hma_2fa_add_encryption_unavailable_message() {
+
+	if ( HM_Accounts_2FA::is_encryption_available() || ! current_user_can( 'administrator' ) || is_admin() ) {
 		return;
 	}
 
-	?>
-	<div class="error">
-		<p>HM Accounts 2FA requires PHP MCrypt or use of custom encryption methods via use of filters in order to function.</p>
-	</div>
-	<?php
+	HM_Accounts_2FA::add_message( 'HM Accounts 2FA requires PHP MCrypt or use of custom encryption methods via use of filters in order to function.', 'logged_in', 'error'  );
 }
 
-add_action( 'all_admin_notices', 'hma_2fa_user_admin_notices' );
+add_action( 'admin_init', 'hma_2fa_add_encryption_unavailable_message' );
 
+// Add a login-interstitial class to the boy on the 2fa auth interstitial
 add_filter( 'body_class', function( $classes ) {
 
 	if ( get_query_var( 'is_login_interstitial' ) );

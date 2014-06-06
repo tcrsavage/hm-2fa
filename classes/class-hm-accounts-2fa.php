@@ -202,90 +202,81 @@ class HM_Accounts_2FA {
 	}
 
 	/**
-	 * Adds a login error to the list - generally there should only be one error in the list at a time
+	 * Get the current messages for the user set via cookie
 	 *
-	 * @param $code
+	 * @param string $context
+	 * @param string $type
+	 * @return mixed|void
+	 */
+	static function get_messages( $context = '', $type = '' ) {
+
+		$cookie   = ! empty( $_COOKIE['hma_2fa_messages'] ) ? json_decode( base64_decode( $_COOKIE['hma_2fa_messages'] ) ) : array();
+		$messages = is_array( $cookie ) ? $cookie : array();
+
+		//Turn JSON object to array
+		foreach( $messages as $key => $message ) {
+
+			$messages[$key] = (array) $message;
+		}
+
+		//Filter context
+		if ( $context ) {
+
+			foreach ( $messages as $key => $message ) {
+				if ( $message['context'] !== $context ) {
+					unset( $messages[$key] );
+				}
+			}
+		}
+
+		//Filter type
+		if ( $type ) {
+
+			foreach ( $messages as $key => $message ) {
+				if ( $message['type'] !== $type ) {
+					unset( $messages[$key] );
+				}
+			}
+		}
+
+		$messages = array_values( $messages );
+
+		return apply_filters( 'hma_2fa_get_messages', $messages, $context, $type );
+	}
+
+	/**
+	 * Add a message for the current user via cookie
+	 *
 	 * @param $text
+	 * @param string $context
+	 * @param string $type
 	 */
-	static function add_login_error( $code, $text ) {
+	static function add_message( $text, $context = '', $type = '' ) {
 
-		$errors = self::get_login_errors();
+		$messages   = self::get_messages();
+		$messages[] = (object) array( 'text' => $text, 'type' => $type, 'context' => $context );
 
-		$errors[$code] = $text;
+		do_action( 'hma_2fa_add_message', $text, $context = '', $type = 'error' );
 
-		do_action( 'hma_2fa_add_login_error', $code, $text, $errors );
+		$encoded = base64_encode( json_encode( $messages ) );
 
-		setcookie( 'hma_2fa_login_errors', json_encode( $errors ), strtotime( '+1 week' ), COOKIEPATH );
-
-	}
-
-	/**
-	 * Gets the login errors
-	 *
-	 * @return array
-	 */
-	static function get_login_errors() {
-
-		$cookie = ! empty( $_COOKIE['hma_2fa_login_errors'] ) ? json_decode( stripslashes( $_COOKIE['hma_2fa_login_errors'] ) ) : array();
-		$errors = is_object( $cookie ) ? (array) $cookie : array();
-
-		return apply_filters( 'hma_2fa_get_login_errors', $errors );
-	}
-
-	/**
-	 * Clears the login errors
-	 */
-	static function delete_login_errors() {
-
-		?>
-		<script type="text/javascript">
-			document.cookie = 'hma_2fa_login_errors=""; path=<?php echo COOKIEPATH; ?>';
-		</script>
-		<?php
-	}
-
-	/**
-	 * Adds a profile update error to the list - generally there should only be one error in the list at a time
-	 *
-	 * @param $code
-	 * @param $text
-	 */
-	static function add_profile_update_error( $code, $text ) {
-
-		$errors = self::get_login_errors();
-
-		$errors[$code] = $text;
-
-		do_action( 'hma_2fa_add_profile_update_error', $code, $text, $errors );
-
-		setcookie( 'hma_2fa_profile_update_errors', json_encode( $errors ), strtotime( '+1 week' ), COOKIEPATH );
+		setcookie( 'hma_2fa_messages', $encoded, strtotime( '+1 week' ), COOKIEPATH );
 
 		//Hack so that WordPress update profile can show the error - there's no page load to initialise the cookie
-		$_COOKIE['hma_2fa_profile_update_errors'] = json_encode( $errors );
+		$_COOKIE['hma_2fa_messages'] = $encoded;
+
 	}
 
 	/**
-	 * Gets the profile update errors
-	 *
-	 * @return array
+	 * Delete the message cookie
 	 */
-	static function get_profile_update_errors() {
-
-		$cookie = ! empty( $_COOKIE['hma_2fa_profile_update_errors'] ) ? json_decode( stripslashes( $_COOKIE['hma_2fa_profile_update_errors'] ) ) : array();
-		$errors = is_object( $cookie ) ? (array) $cookie : array();
-
-		return apply_filters( 'hma_2fa_get_profile_update_errors', $errors );
-	}
-
-	/**
-	 * Clears the profile page errors
-	 */
-	static function delete_profile_update_errors() {
+	static function delete_messages() {
 
 		?>
 		<script type="text/javascript">
-			document.cookie = 'hma_2fa_profile_update_errors=""; path=<?php echo COOKIEPATH; ?>';
+			document.cookie = 'hma_2fa_messages=""; path=<?php echo COOKIEPATH; ?>';
 		</script>
 		<?php
 	}
+
 }
