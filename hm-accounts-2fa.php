@@ -351,8 +351,6 @@ add_action( 'wp_footer', 'hma_2fa_clear_messages' );
  */
 function hma_2fa_admin_notices() {
 
-	var_dump( HM_Accounts_2FA::get_messages( 'logged_in' ) );
-
 	foreach ( HM_Accounts_2FA::get_messages( 'logged_in' ) as $notice ) : ?>
 
 		<div class="<?php echo $notice['type']; ?>">
