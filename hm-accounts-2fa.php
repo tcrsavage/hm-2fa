@@ -88,6 +88,12 @@ function hma_2fa_update_user_profile( $user_id ) {
 
 	if ( isset( $_POST['hma_2fa_is_enabled'] ) ) {
 		$user_2fa->set_2fa_enabled( $enabled );
+
+		//Clear secrets if 2fa is disabled
+		if ( ! $enabled ) {
+			$user_2fa->delete_secret();
+			$user_2fa->delete_single_use_secrets();
+		}
 	}
 
 	if ( $secret ) {

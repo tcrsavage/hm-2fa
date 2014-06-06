@@ -48,6 +48,15 @@ class HM_Accounts_2FA_User {
 	}
 
 	/**
+	 * Deletes the user's 2fa secret key
+	 *
+	 */
+	function delete_secret() {
+
+		$this->delete_meta( 'hma_2fa_secret' );
+	}
+
+	/**
 	 * Set an array of single use secret keys for the user
 	 *
 	 * @param $secrets
@@ -69,6 +78,15 @@ class HM_Accounts_2FA_User {
 		$secrets = $this->get_meta( 'hma_2fa_single_use_secrets' );
 
 		return apply_filters( 'hma_2fa_get_single_use_secrets', array_map( array( 'HM_Accounts_2FA', 'decrypt_secret' ), $secrets ), $this->user_id );
+	}
+
+	/**
+	 * Deletes an array of single use secret keys for the user
+	 *
+	 */
+	function delete_single_use_secrets() {
+
+		$this->delete_meta( 'hma_2fa_single_use_secrets' );
 	}
 
 	/**
