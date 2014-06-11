@@ -1,4 +1,4 @@
-hm-accounts-2fa
+HM-2FA
 ===============
 
 Adds 2 factor authentication to your WordPress site
