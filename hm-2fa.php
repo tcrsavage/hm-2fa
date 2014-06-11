@@ -86,8 +86,7 @@ function hm_2fa_update_user_profile( $user_id ) {
 		HM_2FA::add_message( 'The password you have entered is incorrect', 'profile_update', 'error' );
 		return;
 	}
-
-
+	
 	if ( ! HM_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
 
 		HM_2FA::add_message( 'Either the 2FA verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again', 'profile_update', 'error' );
