@@ -1,6 +1,6 @@
 <?php
 
-class HM_Accounts_2FA {
+class HM_2FA {
 
 	/**
 	 * Verifies a supplied 2fa code against a supplied 2fa secret
@@ -70,7 +70,7 @@ class HM_Accounts_2FA {
 			}
 		}
 
-		return apply_filters( 'hma_2fa_verify_code', $verified, $code, $secret, $last_login );
+		return apply_filters( 'hm_2fa_verify_code', $verified, $code, $secret, $last_login );
 	}
 
 	/**
@@ -87,7 +87,7 @@ class HM_Accounts_2FA {
 			$secret .= substr( $chars, wp_rand( 0, strlen( $chars ) - 1 ), 1 );
 		}
 
-		return apply_filters( 'hma_2fa_generate_secret', $secret, $char_count );
+		return apply_filters( 'hm_2fa_generate_secret', $secret, $char_count );
 	}
 
 	/**
@@ -104,7 +104,7 @@ class HM_Accounts_2FA {
 			$secrets[] = self::generate_secret( 32 );
 		}
 
-		return apply_filters( 'hma_2fa_generate_single_use_secrets', $secrets );
+		return apply_filters( 'hm_2fa_generate_single_use_secrets', $secrets );
 	}
 
 	/**
@@ -128,7 +128,7 @@ class HM_Accounts_2FA {
 			) );
 		}
 
-		return apply_filters( 'hma_2fa_encrypt_secret', $encrypted, $string );
+		return apply_filters( 'hm_2fa_encrypt_secret', $encrypted, $string );
 	}
 
 	/**
@@ -152,7 +152,7 @@ class HM_Accounts_2FA {
 			) );
 		}
 
-		return apply_filters( 'hma_2fa_decrypt_secret', $decrypted, $string );
+		return apply_filters( 'hm_2fa_decrypt_secret', $decrypted, $string );
 	}
 
 	/**
@@ -163,7 +163,7 @@ class HM_Accounts_2FA {
 	 */
 	static function is_encryption_available() {
 		return ( function_exists( 'mcrypt_encrypt' ) && function_exists( 'mcrypt_decrypt' ) )
-			|| ( has_filter( 'hma_2fa_encrypt_secret' ) && has_filter( 'hma_2fa_decrypt_secret' ) );
+			|| ( has_filter( 'hm_2fa_encrypt_secret' ) && has_filter( 'hm_2fa_decrypt_secret' ) );
 	}
 
 	/**
@@ -173,9 +173,9 @@ class HM_Accounts_2FA {
 	 */
 	static function get_encryption_secret() {
 
-		if ( defined( 'HMA_2FA_ENCRYPTION_SECRET' ) && HMA_2FA_ENCRYPTION_SECRET ) {
+		if ( defined( 'hm_2FA_ENCRYPTION_SECRET' ) && hm_2FA_ENCRYPTION_SECRET ) {
 
-			$secret = HMA_2FA_ENCRYPTION_SECRET;
+			$secret = hm_2FA_ENCRYPTION_SECRET;
 
 		} else {
 
@@ -183,7 +183,7 @@ class HM_Accounts_2FA {
 			$secret = substr( $salt, 0, 31 );
 		}
 
-		return apply_filters( 'hma_2fa_get_encryption_secret', $secret );
+		return apply_filters( 'hm_2fa_get_encryption_secret', $secret );
 	}
 
 	/**
@@ -198,7 +198,7 @@ class HM_Accounts_2FA {
 			     . rawurlencode( wp_get_current_user()->user_login ) . "?secret="
 			     . $secret . "&issuer=" . rawurlencode( get_bloginfo( 'name' ) );
 
-		return apply_filters( 'hma_2fa_generate_qr_code_string', $qr_code, $secret );
+		return apply_filters( 'hm_2fa_generate_qr_code_string', $qr_code, $secret );
 	}
 
 	/**
@@ -210,7 +210,7 @@ class HM_Accounts_2FA {
 	 */
 	static function get_messages( $context = '', $type = '' ) {
 
-		$cookie   = ! empty( $_COOKIE['hma_2fa_messages'] ) ? json_decode( base64_decode( $_COOKIE['hma_2fa_messages'] ) ) : array();
+		$cookie   = ! empty( $_COOKIE['hm_2fa_messages'] ) ? json_decode( base64_decode( $_COOKIE['hm_2fa_messages'] ) ) : array();
 		$messages = is_array( $cookie ) ? $cookie : array();
 
 		//Turn JSON object to array
@@ -241,7 +241,7 @@ class HM_Accounts_2FA {
 
 		$messages = array_values( $messages );
 
-		return apply_filters( 'hma_2fa_get_messages', $messages, $context, $type );
+		return apply_filters( 'hm_2fa_get_messages', $messages, $context, $type );
 	}
 
 	/**
@@ -256,14 +256,14 @@ class HM_Accounts_2FA {
 		$messages   = self::get_messages();
 		$messages[] = (object) array( 'text' => $text, 'type' => $type, 'context' => $context );
 
-		do_action( 'hma_2fa_add_message', $text, $context = '', $type = 'error' );
+		do_action( 'hm_2fa_add_message', $text, $context = '', $type = 'error' );
 
 		$encoded = base64_encode( json_encode( $messages ) );
 
-		setcookie( 'hma_2fa_messages', $encoded, strtotime( '+1 week' ), COOKIEPATH );
+		setcookie( 'hm_2fa_messages', $encoded, strtotime( '+1 week' ), COOKIEPATH );
 
 		//Hack so that WordPress update profile can show the error - there's no page load to initialise the cookie
-		$_COOKIE['hma_2fa_messages'] = $encoded;
+		$_COOKIE['hm_2fa_messages'] = $encoded;
 
 	}
 
@@ -274,7 +274,7 @@ class HM_Accounts_2FA {
 
 		?>
 		<script type="text/javascript">
-			document.cookie = 'hma_2fa_messages=""; path=<?php echo COOKIEPATH; ?>';
+			document.cookie = 'hm_2fa_messages=""; path=<?php echo COOKIEPATH; ?>';
 		</script>
 		<?php
 	}

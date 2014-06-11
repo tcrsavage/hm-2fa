@@ -1,6 +1,6 @@
 <?php
 
-class HM_Accounts_2FA_User {
+class HM_2FA_User {
 
 	function __construct( $user_id ) {
 
@@ -11,7 +11,7 @@ class HM_Accounts_2FA_User {
 	 * Shortcut instance getter, also allows for user object or user_id
 	 *
 	 * @param $user
-	 * @return HM_Accounts_2FA_User|WP_Error
+	 * @return HM_2FA_User|WP_Error
 	 */
 	static function get_instance( $user ) {
 
@@ -19,11 +19,11 @@ class HM_Accounts_2FA_User {
 
 		if ( ! get_user_by( 'id', $user_id ) ) {
 
-			return new WP_Error( 'hma_2fa_user_bad_user_param', 'The user param provided to HM_Accounts_2FA_User was incorrect' );
+			return new WP_Error( 'hm_2fa_user_bad_user_param', 'The user param provided to HM_2FA_User was incorrect' );
 
 		} else {
 
-			return new HM_Accounts_2FA_User( $user_id );
+			return new HM_2FA_User( $user_id );
 		}
 	}
 
@@ -34,7 +34,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_secret( $code ) {
 
-		$this->update_meta( 'hma_2fa_secret', HM_Accounts_2FA::encrypt_secret( $code ) );
+		$this->update_meta( 'hm_2fa_secret', HM_2FA::encrypt_secret( $code ) );
 	}
 
 	/**
@@ -44,7 +44,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_secret() {
 
-		return apply_filters( 'hma_2fa_user_get_secret', HM_Accounts_2FA::decrypt_secret( $this->get_meta( 'hma_2fa_secret' ) ), $this->user_id );
+		return apply_filters( 'hm_2fa_user_get_secret', HM_2FA::decrypt_secret( $this->get_meta( 'hm_2fa_secret' ) ), $this->user_id );
 	}
 
 	/**
@@ -53,7 +53,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function delete_secret() {
 
-		$this->delete_meta( 'hma_2fa_secret' );
+		$this->delete_meta( 'hm_2fa_secret' );
 	}
 
 	/**
@@ -63,9 +63,9 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_single_use_secrets( $secrets ) {
 
-		$secrets = array_map( array( 'HM_Accounts_2FA', 'encrypt_secret' ), $secrets );
+		$secrets = array_map( array( 'HM_2FA', 'encrypt_secret' ), $secrets );
 
-		$this->update_meta( 'hma_2fa_single_use_secrets', $secrets );
+		$this->update_meta( 'hm_2fa_single_use_secrets', $secrets );
 	}
 
 	/**
@@ -75,9 +75,9 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_single_use_secrets() {
 
-		$secrets = $this->get_meta( 'hma_2fa_single_use_secrets' );
+		$secrets = $this->get_meta( 'hm_2fa_single_use_secrets' );
 
-		return apply_filters( 'hma_2fa_get_single_use_secrets', array_map( array( 'HM_Accounts_2FA', 'decrypt_secret' ), $secrets ), $this->user_id );
+		return apply_filters( 'hm_2fa_get_single_use_secrets', array_map( array( 'HM_2FA', 'decrypt_secret' ), $secrets ), $this->user_id );
 	}
 
 	/**
@@ -86,7 +86,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function delete_single_use_secrets() {
 
-		$this->delete_meta( 'hma_2fa_single_use_secrets' );
+		$this->delete_meta( 'hm_2fa_single_use_secrets' );
 	}
 
 	/**
@@ -96,7 +96,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_2fa_enabled( $bool ) {
 
-		$this->update_meta( 'hma_2fa_is_enabled', ( $bool ) ? '1' : '0'  );
+		$this->update_meta( 'hm_2fa_is_enabled', ( $bool ) ? '1' : '0'  );
 	}
 
 	/**
@@ -106,7 +106,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_2fa_enabled() {
 
-		return apply_filters( 'hma_2fa_user_get_2fa_enabled', ( $this->get_meta( 'hma_2fa_is_enabled' ) ), $this->user_id );
+		return apply_filters( 'hm_2fa_user_get_2fa_enabled', ( $this->get_meta( 'hm_2fa_is_enabled' ) ), $this->user_id );
 	}
 
 	/**
@@ -116,7 +116,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_2fa_hidden( $bool ) {
 
-		$this->update_meta( 'hma_2fa_is_hidden', ( $bool ) ? '1' : '0'  );
+		$this->update_meta( 'hm_2fa_is_hidden', ( $bool ) ? '1' : '0'  );
 	}
 
 	/**
@@ -126,7 +126,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_2fa_hidden() {
 
-		return apply_filters( 'hma_2fa_user_get_2fa_hidden', ( $this->get_meta( 'hma_2fa_is_hidden' ) ), $this->user_id );
+		return apply_filters( 'hm_2fa_user_get_2fa_hidden', ( $this->get_meta( 'hm_2fa_is_hidden' ) ), $this->user_id );
 	}
 
 	/**
@@ -136,7 +136,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_last_login( $last_login ) {
 
-		$this->update_meta( 'hma_2fa_last_login', $last_login  );
+		$this->update_meta( 'hm_2fa_last_login', $last_login  );
 	}
 
 	/**
@@ -146,7 +146,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_last_login() {
 
-		return apply_filters( 'hma_2fa_user_get_last_login', $this->get_meta( 'hma_2fa_last_login' ), $this->user_id );
+		return apply_filters( 'hm_2fa_user_get_last_login', $this->get_meta( 'hm_2fa_last_login' ), $this->user_id );
 	}
 
 	/**
@@ -156,7 +156,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function set_login_access_token( $token ) {
 
-		$this->update_meta( 'hma_2fa_login_access_token', HM_Accounts_2FA::encrypt_secret( $token ) );
+		$this->update_meta( 'hm_2fa_login_access_token', HM_2FA::encrypt_secret( $token ) );
 	}
 
 	/**
@@ -166,7 +166,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function get_login_access_token() {
 
-		return apply_filters( 'hma_2fa_user_get_login_access_token', HM_Accounts_2FA::decrypt_secret( $this->get_meta( 'hma_2fa_login_access_token' ) ), $this->user_id );
+		return apply_filters( 'hm_2fa_user_get_login_access_token', HM_2FA::decrypt_secret( $this->get_meta( 'hm_2fa_login_access_token' ) ), $this->user_id );
 	}
 
 	/**
@@ -176,7 +176,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function delete_login_access_token() {
 
-		$this->delete_meta( 'hma_2fa_login_access_token' );
+		$this->delete_meta( 'hm_2fa_login_access_token' );
 	}
 
 	/**
@@ -186,7 +186,7 @@ class HM_Accounts_2FA_User {
 	 */
 	function generate_login_access_token() {
 
-		return apply_filters( 'hma_2fa_user_generate_login_access_token', HM_Accounts_2FA::generate_secret( 64 ), $this->user_id );
+		return apply_filters( 'hm_2fa_user_generate_login_access_token', HM_2FA::generate_secret( 64 ), $this->user_id );
 	}
 
 	/**
@@ -202,7 +202,7 @@ class HM_Accounts_2FA_User {
 			$verified = true;
 		}
 
-		return apply_filters( 'hma_2fa_user_verify_login_access_token', $verified );
+		return apply_filters( 'hm_2fa_user_verify_login_access_token', $verified );
 	}
 
 	/**
@@ -228,7 +228,7 @@ class HM_Accounts_2FA_User {
 				$has_cap = false;
 		}
 
-		return apply_filters( 'hma_2fa_user_has_capability', $has_cap, $cap, $this->user_id, $current_user );
+		return apply_filters( 'hm_2fa_user_has_capability', $has_cap, $cap, $this->user_id, $current_user );
 	}
 
 	/**
@@ -249,12 +249,12 @@ class HM_Accounts_2FA_User {
 		$last_time_slot = $this->get_last_login();
 
 		// Valid code ?
-		if ( $time_slot = HM_Accounts_2FA::verify_code( $code, $secret, $last_time_slot ) ) {
+		if ( $time_slot = HM_2FA::verify_code( $code, $secret, $last_time_slot ) ) {
 
 			$verified = $time_slot;
 		}
 
-		return apply_filters( 'hma_2fa_user_verify_code', $verified, $this->user_id );
+		return apply_filters( 'hm_2fa_user_verify_code', $verified, $this->user_id );
 	}
 
 	/**
@@ -275,7 +275,7 @@ class HM_Accounts_2FA_User {
 			}
 		}
 
-		return apply_filters( 'hma_2fa_user_verify_single_use_code', $verified, $this->user_id );
+		return apply_filters( 'hm_2fa_user_verify_single_use_code', $verified, $this->user_id );
 	}
 
 	/**
