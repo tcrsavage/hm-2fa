@@ -48,7 +48,12 @@
 					<div id="hm-2fa-single-use-secrets" style="margin-top: 10px; display: none;">
 					</div>
 
-					<h4>3. Type in the code displayed on your Google Authenticator app to confirm that you have completed step 1 correctly</h4>
+					<h4>3. Type in your current password to confirm that you have permission to make these changes</h4>
+					<div style="margin-top: 10px;">
+						<input type="password" name="hm_2fa_password" id="hm-2fa-password" />
+					</div>
+
+					<h4>4. Type in the code displayed on your Google Authenticator app to confirm that you have completed step 1 correctly</h4>
 					<span class="description">You will have 2 minutes after entering this key to submit the update to your profile. Make sure the clock on your device is correct</span>
 
 					<div style="margin-top: 10px;">
