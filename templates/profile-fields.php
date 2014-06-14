@@ -35,7 +35,7 @@
 
 				<div id="hm-2fa-new-secret-fields" style=" margin-bottom: 10px; display: none;">
 
-					<h4 style="margin-top: 10px;">1. Download the <a href="https://support.google.com/accounts/answer/1066447?hl=en">Google Authenticator</a> app to your device and scan the QR code below</h4>
+					<h4 style="margin-top: 10px;">1. Download the <a target="_blank" href="https://support.google.com/accounts/answer/1066447?hl=en">Google Authenticator</a> app to your device and scan the QR code below</h4>
 
 					<input type="text" name="hm_2fa_secret" id="hm-2fa-secret" placeholder="<?php echo ( $user_2fa->get_secret() ) ? 'It\'s a secret!' : ''; ?>"><br />
 
@@ -48,12 +48,7 @@
 					<div id="hm-2fa-single-use-secrets" style="margin-top: 10px; display: none;">
 					</div>
 
-					<h4>3. Type in your current password to confirm that you have permission to make these changes</h4>
-					<div style="margin-top: 10px;">
-						<input type="password" name="hm_2fa_password" id="hm-2fa-password" />
-					</div>
-
-					<h4>4. Type in the code displayed on your Google Authenticator app to confirm that you have completed step 1 correctly</h4>
+					<h4>3. Type in the code displayed on your Google Authenticator app to confirm that you have completed step 1 correctly</h4>
 					<span class="description">You will have 2 minutes after entering this key to submit the update to your profile. Make sure the clock on your device is correct</span>
 
 					<div style="margin-top: 10px;">

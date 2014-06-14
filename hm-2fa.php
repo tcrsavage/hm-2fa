@@ -75,18 +75,7 @@ function hm_2fa_update_user_profile( $user_id ) {
 	$single_use    = array_map( 'sanitize_text_field', ! empty( $_POST['hm_2fa_single_use_secrets'] ) ? $_POST['hm_2fa_single_use_secrets'] : array() );
 	$enabled       = ( ! empty( $_POST['hm_2fa_is_enabled'] ) && ( $secret || $user_2fa->get_secret() ) && HM_2FA::is_encryption_available() );
 	$hidden        = ( ! empty( $_POST['hm_2fa_is_hidden'] ) );
-	$password      = ( ! empty( $_POST['hm_2fa_password'] ) ) ? $_POST['hm_2fa_password'] : '' ;
 
-	$user          = wp_get_current_user();
-
-	$pw_auth       = wp_authenticate_username_password( false, $user->user_login, $password );
-
-	if ( is_wp_error( $pw_auth ) ) {
-
-		HM_2FA::add_message( '2FA settings have not been updated: The password you have entered is incorrect', 'profile_update', 'error' );
-		return;
-	}
-	
 	if ( ! HM_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
 
 		HM_2FA::add_message( '2FA settings have not been updated: The verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again', 'profile_update', 'error' );
