@@ -78,7 +78,7 @@ function hm_2fa_update_user_profile( $user_id ) {
 
 	if ( ! HM_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
 
-		HM_2FA::add_message( '2FA settings have not been updated: The verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again', 'profile_update', 'error' );
+		HM_2FA::add_message( '2FA settings have not been updated: The verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again.', 'profile_update', 'error' );
 		return;
 	}
 
@@ -86,7 +86,8 @@ function hm_2fa_update_user_profile( $user_id ) {
 		$user_2fa->set_2fa_hidden( $hidden );
 	}
 
-	if ( isset( $_POST['hm_2fa_is_enabled'] ) ) {
+	if ( isset( $_POST['hm_2fa_is_enabled'] ) && $user_2fa->get_2fa_enabled() !== $enabled ) {
+
 		$user_2fa->set_2fa_enabled( $enabled );
 
 		//Clear secrets if 2fa is disabled
@@ -94,14 +95,22 @@ function hm_2fa_update_user_profile( $user_id ) {
 			$user_2fa->delete_secret();
 			$user_2fa->delete_single_use_secrets();
 		}
+
+		$updated = true;
 	}
 
 	if ( $secret ) {
 		$user_2fa->set_secret( $secret );
+		$updated = true;
 	}
 
 	if ( $single_use ) {
 		$user_2fa->set_single_use_secrets( $single_use );
+		$updated = true;
+	}
+
+	if ( ! empty( $updated ) ) {
+		HM_2FA::add_message( '2FA settings have successfully updated.', 'profile_update', 'success' );
 	}
 }
 
