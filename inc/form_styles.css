@@ -1,3 +1,7 @@
+/*
+ * Some basic styling to make the admin settings menus look nicer
+ */
+
 #hm-2fa .hm-2fa-box {
 
 	margin: 15px 0;
@@ -38,7 +42,6 @@
 
 	display: none;
 	margin-bottom: -5px;
-
 }
 
 #hm-2fa .hm-2fa-single-use-secrets ul {
@@ -52,8 +55,7 @@
 	border-left: 4px solid #dd3d36;
 	-webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
 	box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
-	padding: 1px 12px;
-
+	padding: 10px 12px;
 }
 
 #hm-2fa .hm-2fa-secret-verify-success {
@@ -62,8 +64,7 @@
 	border-left: 4px solid #7ad03a;
 	-webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
 	box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
-	padding: 1px 12px;
-
+	padding: 10px 12px;
 }
 
 #hm-2fa .hm-2fa-secret-verify-error p, #hm-2fa .hm-2fa-secret-verify-success p {
