@@ -64,6 +64,7 @@ jQuery( document ).ready( function() {
 
 						successEle.show();
 						self.confirmSecret();
+						self.goToNewSecretStep( 3 );
 
 					} else {
 						errorEle.show();
