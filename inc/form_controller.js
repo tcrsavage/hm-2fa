@@ -28,7 +28,75 @@ jQuery( document ).ready( function() {
 
 				self.generateNewSecret();
 			} );
+
+			jQuery( '.hm-2fa-new-secret-step-forward' ).click( function( e ) {
+
+				e.preventDefault();
+
+				var step = parseInt( jQuery( this ).val() ) + 1;
+
+				self.goToNewSecretStep( step );
+
+			} );
+
+			jQuery( '.hm-2fa-new-secret-step-back' ).click( function( e ) {
+
+				e.preventDefault();
+
+				var step = parseInt( jQuery( this ).val() ) - 1;
+
+				self.goToNewSecretStep( step );
+			} );
+
+			jQuery( '#hm-2fa-secret-verify-submit' ).click( function( e ) {
+
+				e.preventDefault();
+
+				var successEle = jQuery( '#hm-2fa-secret-verify-success' );
+				var errorEle = jQuery( '#hm-2fa-secret-verify-error' );
+
+				successEle.hide();
+				errorEle.hide();
+
+				self.verifySecret( function( payload ) {
+
+					if ( payload && payload.verified ) {
+
+						successEle.show();
+						self.confirmSecret();
+
+					} else {
+						errorEle.show();
+					}
+
+				} );
+
+			} );
+
 		};
+
+		self.confirmSecret = function() {
+
+			jQuery( '#hm-2fa-secret-confirm').val( jQuery( '#hm-2fa-secret').val() );
+
+			jQuery( '#hm-2fa-new-secret-step-2-forward' ).removeAttr( 'disabled' );
+		}
+
+		self.goToNewSecretStep = function( step ) {
+
+			jQuery( '.hm-2fa-new-secret-step' ).hide();
+
+			var ele = jQuery( '#hm-2fa-new-secret-step-' + step ).show()
+
+			if ( ele.find( 'input' ) ) {
+
+				ele.find( 'input' ).first().focus();
+
+			} else if ( ele.find( 'button' ) ) {
+
+				ele.find( 'button' ).last().focus();
+			}
+		}
 
 		self.isEnabled = function() {
 
@@ -47,12 +115,12 @@ jQuery( document ).ready( function() {
 
 		self.showNewSecretFields = function() {
 
-			jQuery( '#hm-2fa-new-secret-fields' ).show();
+			jQuery( '#hm-2fa-new-secret-steps' ).show();
 		}
 
 		self.hideNewSecretFields = function() {
 
-			jQuery( '#hm-2fa-new-secret-fields' ).hide();
+			jQuery( '#hm-2fa-new-secret-steps' ).hide();
 		}
 
 		self.setAjaxLoading = function( bool ) {
@@ -93,6 +161,30 @@ jQuery( document ).ready( function() {
 			container.show().append( ul );
 		}
 
+		self.verifySecret = function( callback ) {
+
+			jQuery( '#hm-2fa-new-secret-step-2' ).find( '.spinner' ).show();
+
+			var data = {
+				action               : 'hm_2fa_ajax_verify_secret_key',
+				hm_2fa_secret        : jQuery( '#hm-2fa-secret').val(),
+				hm_2fa_secret_verify : jQuery( '#hm-2fa-secret-verify').val()
+
+			};
+
+			jQuery.post( ajaxurl, data, function( response ) {
+
+				jQuery( '#hm-2fa-new-secret-step-2' ).find( '.spinner' ).hide();
+
+				if ( typeof( callback ) !== 'undefined' ) {
+
+					callback( response )
+				}
+
+			}, 'json' );
+
+		}
+
 		self.generateNewSecret = function() {
 
 			self.setAjaxLoading( true );
@@ -114,11 +206,11 @@ jQuery( document ).ready( function() {
 
 				self.showNewSecretFields();
 
-				jQuery( '#hm-2fa-secret' ).val( response.secret ).focus();
+				jQuery( '#hm-2fa-secret' ).val( response.secret).focus();
 
 				jQuery( '#hm-2fa-generate-secret' ).hide();
 
-			} , 'json' );
+			}, 'json' );
 		}
 	};
 

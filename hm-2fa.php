@@ -27,6 +27,17 @@ function hm_2fa_enqueue_profile_edit_scripts( $in_footer = false, $require_jquer
 add_action( 'admin_enqueue_scripts', 'hm_2fa_enqueue_profile_edit_scripts' );
 
 /**
+ * Enqueue the profile editing styles
+ */
+function hm_2fa_enqueue_profile_edit_styles( $in_footer = false, $require_jquery = true ) {
+
+
+	wp_enqueue_style( 'hm_2fa_form_styles', plugins_url( 'inc/form_styles.css', __FILE__ ) );
+}
+
+add_action( 'admin_enqueue_scripts', 'hm_2fa_enqueue_profile_edit_styles' );
+
+/**
  * Add the 2fa fields to the admin screen
  *
  * @access public
@@ -70,15 +81,15 @@ function hm_2fa_update_user_profile( $user_id ) {
 		return;
 	}
 
-	$secret        = sanitize_text_field( $_POST['hm_2fa_secret'] );
-	$verify_secret = ( ! empty( $_POST['hm_2fa_secret_verify'] ) ) ? sanitize_text_field( $_POST['hm_2fa_secret_verify'] ) : '';
-	$single_use    = array_map( 'sanitize_text_field', ! empty( $_POST['hm_2fa_single_use_secrets'] ) ? $_POST['hm_2fa_single_use_secrets'] : array() );
-	$enabled       = ( ! empty( $_POST['hm_2fa_is_enabled'] ) && ( $secret || $user_2fa->get_secret() ) && HM_2FA::is_encryption_available() );
-	$hidden        = ( ! empty( $_POST['hm_2fa_is_hidden'] ) );
+	$secret         = sanitize_text_field( $_POST['hm_2fa_secret'] );
+	$secret_confirm = ( ! empty( $_POST['hm_2fa_secret_confirm'] ) ) ? sanitize_text_field( $_POST['hm_2fa_secret_confirm'] ) : '';
+	$single_use     = array_map( 'sanitize_text_field', ! empty( $_POST['hm_2fa_single_use_secrets'] ) ? $_POST['hm_2fa_single_use_secrets'] : array() );
+	$enabled        = ( ! empty( $_POST['hm_2fa_is_enabled'] ) && ( $secret || $user_2fa->get_secret() ) && HM_2FA::is_encryption_available() );
+	$hidden         = ( ! empty( $_POST['hm_2fa_is_hidden'] ) );
 
-	if ( ! HM_2FA::verify_code( $verify_secret, $secret, 0, 2 ) && $secret ) {
+	if ( empty( $secret_confirm ) && $secret ) {
 
-		HM_2FA::add_message( '2FA settings have not been updated: The verification code you entered was incorrect, or your device\'s clock is out of sync with the server. Please try again.', 'profile_update', 'error' );
+		HM_2FA::add_message( '2FA settings have not been updated: The secret key was not confirmed', 'profile_update', 'error' );
 		return;
 	}
 
@@ -116,6 +127,23 @@ function hm_2fa_update_user_profile( $user_id ) {
 
 add_action( 'personal_options_update', 'hm_2fa_update_user_profile' );
 add_action( 'edit_user_profile_update', 'hm_2fa_update_user_profile' );
+
+/**
+ * Verify a given secret key against a given secret code via ajax
+ */
+function hm_2fa_ajax_verify_secret_key() {
+
+	$secret 	= sanitize_text_field( $_POST['hm_2fa_secret'] );
+	$verified   = (bool) HM_2FA::verify_code( $_POST['hm_2fa_secret_verify'], $secret, 0, 2 );
+
+	echo json_encode( array(
+		'verified' => $verified
+	) );
+
+	exit;
+}
+
+add_action( 'wp_ajax_hm_2fa_ajax_verify_secret_key', 'hm_2fa_ajax_verify_secret_key' );
 
 /**
  * Generate a new random 2fa key and qr code string

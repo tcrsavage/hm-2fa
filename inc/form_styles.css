@@ -1,0 +1,77 @@
+#hm-2fa .hm-2fa-box {
+
+	margin: 15px 0;
+}
+
+#hm-2fa h3 {
+
+	margin-top: 5px;
+}
+
+#hm-2fas .hm-2fa-box-extra-margin {
+
+	margin: 20px 0;
+}
+
+#hm-2fa input, #hm-2fa button {
+
+	margin: 0;
+}
+
+#hm-2fa #hm-2fa-secret {
+
+	width: 257px;
+}
+
+#hm-2fa .spinner {
+
+	display: none;
+	float: left;
+	margin: 0;
+	width: 50px;
+}
+
+#hm-2fa td.spinner {
+
+	float: left;
+	margin-top: 20px;
+	margin-left: 10px;
+	padding: 0;
+}
+
+#hm-2fa-secret-verify-spinner-wrap {
+
+	display: inline-block;
+	margin-bottom: -5px;
+
+}
+
+#hm-2fa-single-use-secrets ul {
+
+	font-size: 18px;
+}
+
+#hm-2fa-secret-verify-error {
+
+	background: #fff;
+	border-left: 4px solid #dd3d36;
+	-webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+	box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+	padding: 1px 12px;
+
+}
+
+#hm-2fa-secret-verify-success {
+
+	background: #fff;
+	border-left: 4px solid #7ad03a;
+	-webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+	box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+	padding: 1px 12px;
+
+}
+
+#hm-2fa-secret-verify-error p, #hm-2fa-secret-verify-success p {
+
+	margin-top: 0;
+}

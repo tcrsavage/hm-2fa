@@ -33,39 +33,112 @@
 			<th><label for="hm-2fa-secret">Secret codes</label></th>
 			<td id="hm-2fa-secret-settings-fields">
 
-				<div id="hm-2fa-new-secret-fields" style=" margin-bottom: 10px; display: none;">
+				<div id="hm-2fa-new-secret-steps" style="display: none;">
 
-					<h4 style="margin-top: 10px;">1. Download the <a target="_blank" href="https://support.google.com/accounts/answer/1066447?hl=en">Google Authenticator</a> app to your device and scan the QR code below</h4>
+					<div class="hm-2fa-new-secret-step" id="hm-2fa-new-secret-step-1">
 
-					<input type="text" name="hm_2fa_secret" id="hm-2fa-secret" placeholder="<?php echo ( $user_2fa->get_secret() ) ? 'It\'s a secret!' : ''; ?>"><br />
+						<h3>Step 1/4</h3>
 
-					<div id="hm-2fa-qr-code" style="margin: 10px 1px 1px 1px;"></div>
+						<div class="hm-2fa-box">
+							<span>Download the <a target="_blank" href="https://support.google.com/accounts/answer/1066447?hl=en">Google Authenticator</a> app to your device and scan the QR code below</span>
+						</div>
 
-					<h4>2. Store these single use keys somewhere safe, we recommend printing them off</h4>
-					<span class="description">You can use these keys for one time access to your account if you lose/break your device</span>
+						<div class="hm-2fa-box">
+							<input type="text" name="hm_2fa_secret" id="hm-2fa-secret" placeholder="<?php echo ( $user_2fa->get_secret() ) ? 'It\'s a secret!' : ''; ?>"><br />
+							<input type="hidden" name="hm_2fa_secret_confirm" id="hm-2fa-secret-confirm">
+						</div>
 
+						<div id="hm-2fa-qr-code" class="hm-2fa-box"></div>
 
-					<div id="hm-2fa-single-use-secrets" style="margin-top: 10px; display: none;">
+						<div class="hm-2fa-box">
+							<button class="button hm-2fa-new-secret-step-forward" id="hm-2fa-new-secret-step-1-forward" value="1">Continue</button>
+						</div>
+
 					</div>
 
-					<h4>3. Type in the code displayed on your Google Authenticator app to confirm that you have completed step 1 correctly</h4>
-					<span class="description">You will have 2 minutes after entering this key to submit the update to your profile. Make sure the clock on your device is correct</span>
+					<div class="hm-2fa-new-secret-step" id="hm-2fa-new-secret-step-2" style="display: none;">
 
-					<div style="margin-top: 10px;">
-						<input type="text" name="hm_2fa_secret_verify" id="hm-2fa-secret-confirm" />
+						<h3>Step 2/4</h3>
+
+						<div class="hm-2fa-box">
+							<span>Type in the code displayed on your Google Authenticator app to confirm that you have completed step 1 correctly</span>
+						</div>
+
+						<div class="hm-2fa-box" id="hm-2fa-secret-verify-success" style="display: none;">
+							<p>
+								<strong>The code that you entered was verified!</strong>
+							</p>
+						</div>
+
+						<div class="hm-2fa-box" id="hm-2fa-secret-verify-error" style="display: none;">
+							<p>
+								<strong>The code that you entered was incorrect: Please make sure that your device's clock is correct and try again.</strong>
+							</p>
+						</div>
+
+						<div class="hm-2fa-box">
+							<input type="text" id="hm-2fa-secret-verify" value="" placeholder="123456" />
+							<button class="button" id="hm-2fa-secret-verify-submit" value="2">Verify</button>
+							<div id="hm-2fa-secret-verify-spinner-wrap">
+								<div class="spinner"></div>
+							</div>
+						</div>
+
+						<div class="hm-2fa-box">
+							<button class="button hm-2fa-new-secret-step-back" id="hm-2fa-new-secret-step-2-back" value="2">Back</button>
+							<button class="button hm-2fa-new-secret-step-forward" id="hm-2fa-new-secret-step-2-forward" disabled="disabled" value="2">Continue</button>
+						</div>
+
+					</div>
+
+					<div class="hm-2fa-new-secret-step" id="hm-2fa-new-secret-step-3" style="display: none;">
+
+						<h3>Step 3/4</h3>
+
+						<div class="hm-2fa-box">
+							<span>Store these single use keys somewhere safe, we recommend printing them off. These are important!</span>
+						</div>
+
+						<div class="hm-2fa-box">
+							<span class="description">You can use these keys for one time access to your account if you lose/break your device</span>
+						</div>
+
+						<div class="hm-2fa-box">
+							<div id="hm-2fa-single-use-secrets" class="code" style="display: none;"></div>
+						</div>
+
+						<div class="hm-2fa-box">
+							<button class="button hm-2fa-new-secret-step-back" id="hm-2fa-new-secret-step-3-back" value="3">Back</button>
+							<button class="button hm-2fa-new-secret-step-forward" id="hm-2fa-new-secret-step-3-forward" value="3">Continue</button>
+						</div>
+
+					</div>
+
+					<div class="hm-2fa-new-secret-step" id="hm-2fa-new-secret-step-4" style="display: none;">
+
+						<h3>Step 4/4</h3>
+
+						<div class="hm-2fa-box">
+							<h4>Click 'Update Profile' to save your changes</h4>
+						</div>
+
+						<div class="hm-2fa-box">
+							<span class="description">You're all done. You just need to submit your changes by clicking 'Update Profile' at the bottom of the page</span>
+						</div>
+
+						<div class="hm-2fa-box">
+							<button class="button hm-2fa-new-secret-step-back" id="hm-2fa-new-secret-step-2-back" value="4">Back</button>
+						</div>
+
 					</div>
 
 				</div>
 
-				<div>
-					<input type="button" id="hm-2fa-generate-secret" class="button button-secondary" value="Generate<?php echo ( $user_2fa->get_secret() ) ? ' new' : ''; ?>"  /> <br />
-				</div>
+				<input type="button" id="hm-2fa-generate-secret" class="button button-secondary" value="Generate<?php echo ( $user_2fa->get_secret() ) ? ' new' : ''; ?>"  />
 
 			</td>
 
-			<td id="hm-2fa-secret-settings-ajax-loading" style="display: none;">
-				<div class="spinner" style="display: block; float: left; margin: 0;"></div>
-			</td>
+			<td id="hm-2fa-secret-settings-ajax-loading" class="spinner"></td>
 		</tr>
 
 	</table>
