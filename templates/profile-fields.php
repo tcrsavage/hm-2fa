@@ -64,13 +64,13 @@
 							<span>Type in the code displayed on your Google Authenticator app to confirm that you have completed step 1 correctly</span>
 						</div>
 
-						<div class="hm-2fa-box" id="hm-2fa-secret-verify-success" style="display: none;">
+						<div class="hm-2fa-box hm-2fa-secret-verify-success" id="hm-2fa-secret-verify-success" style="display: none;">
 							<p>
 								<strong>The code that you entered was verified!</strong>
 							</p>
 						</div>
 
-						<div class="hm-2fa-box" id="hm-2fa-secret-verify-error" style="display: none;">
+						<div class="hm-2fa-box hm-2fa-secret-verify-error" id="hm-2fa-secret-verify-error" style="display: none;">
 							<p>
 								<strong>The code that you entered was incorrect: Please make sure that your device's clock is correct and try again.</strong>
 							</p>
@@ -79,7 +79,7 @@
 						<div class="hm-2fa-box">
 							<input type="text" id="hm-2fa-secret-verify" value="" placeholder="123456" />
 							<button class="button" id="hm-2fa-secret-verify-submit" value="2">Verify</button>
-							<div id="hm-2fa-secret-verify-spinner-wrap">
+							<div class="hm-2fa-secret-verify-spinner" id="hm-2fa-secret-verify-spinner">
 								<div class="spinner"></div>
 							</div>
 						</div>
@@ -104,7 +104,7 @@
 						</div>
 
 						<div class="hm-2fa-box">
-							<div id="hm-2fa-single-use-secrets" class="code" style="display: none;"></div>
+							<div id="hm-2fa-single-use-secrets" class="code hm-2fa-single-use-secrets" style="display: none;"></div>
 						</div>
 
 						<div class="hm-2fa-box">
@@ -138,7 +138,7 @@
 
 			</td>
 
-			<td id="hm-2fa-secret-settings-ajax-loading" class="spinner"></td>
+			<td id="hm-2fa-secret-settings-ajax-loading" class="spinner" style="display: none;"></td>
 		</tr>
 
 	</table>

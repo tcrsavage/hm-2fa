@@ -8,11 +8,6 @@
 	margin-top: 5px;
 }
 
-#hm-2fas .hm-2fa-box-extra-margin {
-
-	margin: 20px 0;
-}
-
 #hm-2fa input, #hm-2fa button {
 
 	margin: 0;
@@ -25,10 +20,10 @@
 
 #hm-2fa .spinner {
 
-	display: none;
 	float: left;
 	margin: 0;
 	width: 50px;
+	display: block;
 }
 
 #hm-2fa td.spinner {
@@ -39,19 +34,19 @@
 	padding: 0;
 }
 
-#hm-2fa-secret-verify-spinner-wrap {
+#hm-2fa .hm-2fa-secret-verify-spinner {
 
-	display: inline-block;
+	display: none;
 	margin-bottom: -5px;
 
 }
 
-#hm-2fa-single-use-secrets ul {
+#hm-2fa .hm-2fa-single-use-secrets ul {
 
 	font-size: 18px;
 }
 
-#hm-2fa-secret-verify-error {
+#hm-2fa .hm-2fa-secret-verify-error {
 
 	background: #fff;
 	border-left: 4px solid #dd3d36;
@@ -61,7 +56,7 @@
 
 }
 
-#hm-2fa-secret-verify-success {
+#hm-2fa .hm-2fa-secret-verify-success {
 
 	background: #fff;
 	border-left: 4px solid #7ad03a;
@@ -71,7 +66,7 @@
 
 }
 
-#hm-2fa-secret-verify-error p, #hm-2fa-secret-verify-success p {
+#hm-2fa .hm-2fa-secret-verify-error p, #hm-2fa .hm-2fa-secret-verify-success p {
 
 	margin-top: 0;
 }

@@ -86,7 +86,7 @@ jQuery( document ).ready( function() {
 
 			jQuery( '.hm-2fa-new-secret-step' ).hide();
 
-			var ele = jQuery( '#hm-2fa-new-secret-step-' + step ).show()
+			var ele = jQuery( '#hm-2fa-new-secret-step-' + step ).show();
 
 			if ( ele.find( 'input' ) ) {
 
@@ -123,21 +123,6 @@ jQuery( document ).ready( function() {
 			jQuery( '#hm-2fa-new-secret-steps' ).hide();
 		}
 
-		self.setAjaxLoading = function( bool ) {
-
-			if ( bool ) {
-
-				jQuery( '#hm-2fa-secret-settings-fields' ).hide();
-				jQuery( '#hm-2fa-secret-settings-ajax-loading' ).show();
-
-			} else {
-
-				jQuery( '#hm-2fa-secret-settings-ajax-loading' ).hide();
-				jQuery( '#hm-2fa-secret-settings-fields' ).show();
-			}
-
-		}
-
 		self.setQRCodeHtml = function( code ) {
 
 			jQuery( '#hm-2fa-qr-code' ).html( '' ).qrcode( code );
@@ -163,7 +148,7 @@ jQuery( document ).ready( function() {
 
 		self.verifySecret = function( callback ) {
 
-			jQuery( '#hm-2fa-new-secret-step-2' ).find( '.spinner' ).show();
+			jQuery( '#hm-2fa-new-secret-step-2' ).find( '#hm-2fa-secret-verify-spinner' ).css( 'display', 'inline-block' );
 
 			var data = {
 				action               : 'hm_2fa_ajax_verify_secret_key',
@@ -174,7 +159,7 @@ jQuery( document ).ready( function() {
 
 			jQuery.post( ajaxurl, data, function( response ) {
 
-				jQuery( '#hm-2fa-new-secret-step-2' ).find( '.spinner' ).hide();
+				jQuery( '#hm-2fa-new-secret-step-2' ).find( '#hm-2fa-secret-verify-spinner' ).hide();
 
 				if ( typeof( callback ) !== 'undefined' ) {
 
@@ -187,7 +172,8 @@ jQuery( document ).ready( function() {
 
 		self.generateNewSecret = function() {
 
-			self.setAjaxLoading( true );
+			jQuery( '#hm-2fa-secret-settings-fields' ).hide();
+			jQuery( '#hm-2fa-secret-settings-ajax-loading' ).show();
 
 			var data = {
 				action  : 'hm_2fa_generate_secret_key'
@@ -195,7 +181,8 @@ jQuery( document ).ready( function() {
 
 			jQuery.post( ajaxurl, data, function( response ) {
 
-				self.setAjaxLoading( false );
+				jQuery( '#hm-2fa-secret-settings-ajax-loading' ).hide();
+				jQuery( '#hm-2fa-secret-settings-fields' ).show();
 
 				if ( ! response )
 					return;
