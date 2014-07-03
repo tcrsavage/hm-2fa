@@ -173,10 +173,10 @@ add_action( 'wp_ajax_hm_2fa_generate_secret_key', 'hm_2fa_ajax_generate_secret_k
  * @param string $password
  * @return WP_Error
  */
-function hm_2fa_authenticate_interstitial( $user_authenticated, $username = '', $password = '' ) {
+function hm_2fa_authentication_interstitial( $user_authenticated, $username = '', $password = '' ) {
 
 	global $wp_query;
-	$wp_query->is_login_interstitial = true;
+	$wp_query->is_2fa_login_interstitial = true;
 
 	$user     = get_user_by( 'login', $username );
 	$user_2fa = HM_2FA_User::get_instance( $user );
@@ -203,7 +203,7 @@ function hm_2fa_authenticate_interstitial( $user_authenticated, $username = '', 
 	exit;
 }
 
-add_action( 'authenticate', 'hm_2fa_authenticate_interstitial', 900, 3 );
+add_action( 'authenticate', 'hm_2fa_authentication_interstitial', 900, 3 );
 
 /**
  * Get the custom interstitial login form html - if custom html has not been set, we'll fall back to default
@@ -216,7 +216,7 @@ add_action( 'authenticate', 'hm_2fa_authenticate_interstitial', 900, 3 );
 function hm_2fa_get_custom_interstitial_html( $user_2fa, $login_token, $redirect_to ) {
 
 	//Template file has been created for the interstitial screen, use that
-	if ( file_exists( $file_path = apply_filters( 'hm_2fa_authenticate_interstitial_template', get_template_directory() . '/login.hm_2fa.php' ) ) ) {
+	if ( file_exists( $file_path = apply_filters( 'hm_2fa_authentication_interstitial_template', get_template_directory() . '/login.hm_2fa.php' ) ) ) {
 
 		ob_start();
 
@@ -225,7 +225,7 @@ function hm_2fa_get_custom_interstitial_html( $user_2fa, $login_token, $redirect
 		return ob_get_clean();
 
 	//Custom html has been defined, use that
-	} elseif ( $contents = apply_filters( 'hm_2fa_authenticate_interstitial_html', '', $user_2fa, $login_token, $redirect_to ) ) {
+	} elseif ( $contents = apply_filters( 'hm_2fa_authentication_interstitial_html', '', $user_2fa, $login_token, $redirect_to ) ) {
 
 		return $contents;
 	}
@@ -413,11 +413,11 @@ function hm_2fa_add_encryption_unavailable_message() {
 
 add_action( 'admin_init', 'hm_2fa_add_encryption_unavailable_message' );
 
-// Add a login-interstitial class to the boy on the 2fa auth interstitial
+// Add a login-interstitial class to the body on the 2fa auth interstitial
 add_filter( 'body_class', function( $classes ) {
 
-	if ( get_query_var( 'is_login_interstitial' ) );
-		$classes[] = 'login-interstitial';
+	if ( get_query_var( 'is_2fa_login_interstitial' ) );
+		$classes[] = '2fa-login-interstitial';
 
 	return $classes;
 
