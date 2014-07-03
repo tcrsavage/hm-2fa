@@ -44,7 +44,7 @@
 						</div>
 
 						<div class="hm-2fa-box">
-							<input type="text" name="hm_2fa_secret" id="hm-2fa-secret" placeholder="<?php echo ( $user_2fa->get_secret() ) ? 'It\'s a secret!' : ''; ?>"><br />
+							<input type="text" name="hm_2fa_secret" id="hm-2fa-secret" autocomplete="off" placeholder="<?php echo ( $user_2fa->get_secret() ) ? 'It\'s a secret!' : ''; ?>"><br />
 							<input type="hidden" name="hm_2fa_secret_confirm" id="hm-2fa-secret-confirm">
 						</div>
 
@@ -77,7 +77,7 @@
 						</div>
 
 						<div class="hm-2fa-box">
-							<input type="text" id="hm-2fa-secret-verify" value="" placeholder="123456" />
+							<input type="text" id="hm-2fa-secret-verify" autocomplete="off" value="" placeholder="123456" />
 							<button class="button" id="hm-2fa-secret-verify-submit" value="2">Verify</button>
 							<div class="hm-2fa-secret-verify-spinner" id="hm-2fa-secret-verify-spinner">
 								<div class="spinner"></div>

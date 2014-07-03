@@ -7,7 +7,7 @@
 		<form name="loginform" id="loginform" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post" style="padding-bottom: 25px">
 			<p>
 				<label for="user_login">Auth key<br />
-				<input type="text" id="hm-2fa-auth-code" name="hm_2fa_auth_code" value="" />
+				<input type="text" id="hm-2fa-auth-code" name="hm_2fa_auth_code" autocomplete="off" placeholder="123456" value="" />
 			</p>
 
 			<p class="submit">
