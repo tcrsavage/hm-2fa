@@ -356,7 +356,7 @@ function hm_2fa_display_admin_login_page_errors( WP_Error $errors, $redirect_to 
 add_filter( 'wp_login_errors', 'hm_2fa_display_admin_login_page_messages', 10, 2 );
 
 /**
- * Hook in to the WordPress login page error messages and display 2fa error messages if applicable
+ * Hook in to the WordPress profile page update error messages and display 2fa error messages if applicable
  */
 function hm_2fa_display_admin_profile_update_errors( WP_Error $errors ) {
 
