@@ -176,7 +176,7 @@ add_action( 'wp_ajax_hm_2fa_generate_secret_key', 'hm_2fa_ajax_generate_secret_k
 function hm_2fa_authentication_interstitial( $user_authenticated, $username = '', $password = '' ) {
 
 	global $wp_query;
-	$wp_query->is_2fa_login_interstitial = true;
+	$wp_query->is_login_interstitial_2fa = true;
 
 	$user     = get_user_by( 'login', $username );
 	$user_2fa = HM_2FA_User::get_instance( $user );
@@ -416,8 +416,8 @@ add_action( 'admin_init', 'hm_2fa_add_encryption_unavailable_message' );
 // Add a login-interstitial class to the body on the 2fa auth interstitial
 add_filter( 'body_class', function( $classes ) {
 
-	if ( get_query_var( 'is_2fa_login_interstitial' ) );
-		$classes[] = '2fa-login-interstitial';
+	if ( get_query_var( 'is_login_interstitial_2fa' ) );
+		$classes[] = 'login-interstitial-2fa';
 
 	return $classes;
 
