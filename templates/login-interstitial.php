@@ -25,7 +25,7 @@
 		</form>
 
 		<script type="text/javascript">
-			function wp_attempt_focus(){
+			function hm_2fa_atempt_focus(){
 				setTimeout( function(){ try{
 					d = document.getElementById( 'hm-2fa-auth-code' );
 
@@ -35,7 +35,7 @@
 				} catch(e){}
 				}, 200);
 			}
-			wp_attempt_focus();
+			hm_2fa_atempt_focus();
 		</script>
 
 <?php login_footer(); ?>
